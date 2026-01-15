@@ -13,15 +13,29 @@ This repository captures technical challenges and their solutions in a structure
 
 ## Organization
 
+**Hybrid Jekyll-Compatible Structure:**
+
 ```
-docs/analysis/
-├── YYYY-MM-DD-{slug}/
-│   ├── README.md           # Main RCA document
-│   ├── _metadata.json      # Searchable metadata
-│   └── media/              # Diagrams, screenshots (optional)
-├── YYYY-MM-DD-{another-slug}/
-└── ...
+rca-knowledge/
+├── docs/analysis/
+│   ├── 2025-01-15-mapfile-compatibility.md    ← Single file with YAML frontmatter
+│   ├── 2025-01-16-docker-networking.md
+│   └── ...
+├── _assets/                                    ← Centralized media files
+│   ├── mapfile-compatibility-diagram.png
+│   ├── docker-networking-topology.svg
+│   └── ...
+├── _index.json                                 ← Searchable master index
+├── README.md
+└── .gitignore
 ```
+
+**Why This Structure?**
+- **Jekyll-Compatible**: Files work directly with Jekyll blogs, GitHub Pages
+- **Simple & Portable**: Single .md files migrate easily to Medium, Dev.to, personal blogs
+- **YAML Frontmatter**: Metadata in file header (compatible with all markdown processors)
+- **Centralized Assets**: All images/diagrams in one place for easy management
+- **Scalable**: Works with 1 document or 1000+ documents
 
 ## Quick Navigation
 
@@ -35,7 +49,7 @@ Browse by category:
 
 ### Shell Scripting
 
-- [2025-01-15: Bash mapfile Compatibility](./docs/analysis/2025-01-15-mapfile-compatibility)
+- [2025-01-15: Bash mapfile Compatibility](./docs/analysis/2025-01-15-mapfile-compatibility.md)
 
 ### Docker & Containers
 
@@ -94,21 +108,23 @@ Query by:
 
 ## Contributing
 
-When creating RCA documents:
+When creating RCA documents with `/write-rca-doc` skill:
 
-1. Use `write-rca-doc` skill (auto-formatting)
-2. Follow document structure:
+1. **File Format**: Creates `docs/analysis/YYYY-MM-DD-{slug}.md` (Jekyll-compatible)
+2. **YAML Frontmatter**: Metadata stored in file header (no separate JSON needed)
+3. **Media**: Place images/diagrams in `_assets/` folder
+4. **Structure**: Auto-generates all 9 sections:
    - Executive Summary
    - Problem & Context
    - Root Cause Analysis
    - Solution & Implementation
    - Deep Dive
+   - Compatibility Matrix
    - Prevention Checklist
    - Related Issues
    - Quick Reference
-3. Complete `_metadata.json` with all fields
-4. Update `_index.json` (auto via skill)
-5. Commit with message: `docs: Add RCA for {issue-slug}`
+5. **Index**: Auto-updates `_index.json`
+6. **Git**: Commit with message: `docs: Add RCA for {issue-slug}`
 
 ## Statistics
 

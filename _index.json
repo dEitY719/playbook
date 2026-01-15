@@ -1,14 +1,17 @@
 {
-  "version": "1.0",
-  "generated": "2025-01-15T15:30:00Z",
+  "version": "2.0",
+  "format": "hybrid-jekyll-compatible",
+  "description": "Hybrid RCA structure: single .md files with YAML frontmatter + centralized media in _assets/",
+  "generated": "2025-01-15T15:45:00Z",
   "total_documents": 1,
   "documents": [
     {
       "id": "2025-01-15-mapfile-compatibility",
       "title": "Bash mapfile Command Compatibility Issues",
-      "path": "docs/analysis/2025-01-15-mapfile-compatibility",
+      "path": "docs/analysis/2025-01-15-mapfile-compatibility.md",
+      "slug": "mapfile-compatibility",
       "date_created": "2025-01-15T15:30:00Z",
-      "date_modified": "2025-01-15T15:30:00Z",
+      "date_modified": "2025-01-15T15:45:00Z",
       "project": "dotfiles",
       "category": "shell-scripting",
       "severity": "medium",
@@ -21,7 +24,10 @@
       "time_to_fix_minutes": 5,
       "word_count": 2847,
       "reading_time_minutes": 12,
-      "difficulty_level": "intermediate"
+      "difficulty_level": "intermediate",
+      "blog_ready": true,
+      "ai_learning_value": "High",
+      "junior_engineer_value": "High"
     }
   ],
   "categories": {

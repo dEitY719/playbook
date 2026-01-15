@@ -1,0 +1,140 @@
+{
+  "id": "2025-01-15-mapfile-compatibility",
+  "title": "Bash mapfile Command Compatibility Issues",
+  "slug": "mapfile-compatibility",
+  "date_created": "2025-01-15T15:30:00Z",
+  "date_modified": "2025-01-15T15:30:00Z",
+  "date_resolved": "2025-01-15T15:25:00Z",
+  "project": "dotfiles",
+  "component": "shell-common/tools/integrations/litellm.sh",
+  "affected_functions": ["_verify_models_loaded"],
+  "category": "shell-scripting",
+  "severity": "medium",
+  "impact_level": "high",
+  "priority": "medium",
+  "status": "resolved",
+  "tags": [
+    "bash",
+    "mapfile",
+    "posix",
+    "compatibility",
+    "shell-script",
+    "array-operations",
+    "litellm",
+    "builtin-commands"
+  ],
+  "target_audiences": [
+    "postmortem",
+    "blog",
+    "ai-learning",
+    "junior-engineers"
+  ],
+  "keywords": [
+    "mapfile",
+    "while-read",
+    "posix-compatibility",
+    "bash-internals",
+    "bash-builtins",
+    "shell-environment",
+    "array-handling",
+    "shebang",
+    "litellm-integration"
+  ],
+  "summary": "mapfile is Bash 4.0+ exclusive; POSIX-compatible while-read alternative explained with deep technical principles and prevention strategies",
+  "problem_statement": "_verify_models_loaded failed with 'command not found: mapfile' when LiteLLM service was running",
+  "root_cause": "mapfile is Bash 4.0+ only; script executed in shell environment lacking this builtin despite #!/bin/bash shebang",
+  "solution_type": "code-refactor",
+  "solution_summary": "Replaced mapfile with POSIX-compatible while-read loops",
+  "files_changed": 1,
+  "lines_added": 8,
+  "lines_removed": 2,
+  "time_to_fix_minutes": 5,
+  "word_count": 2847,
+  "reading_time_minutes": 12,
+  "estimated_learn_time_minutes": 20,
+  "difficulty_level": "intermediate",
+  "concepts_covered": [
+    "Bash vs POSIX compatibility",
+    "Shell environment mismatch",
+    "Array operations in shell",
+    "Process substitution",
+    "Bash builtins vs POSIX standards",
+    "Portability testing"
+  ],
+  "code_patterns": [
+    "mapfile (anti-pattern for portability)",
+    "while read loop (POSIX pattern)",
+    "Array initialization",
+    "Empty line filtering",
+    "Process substitution"
+  ],
+  "prevention_measures": [
+    "Use POSIX-compatible constructs when possible",
+    "Test with POSIX sh, not just bash",
+    "Add shell compatibility checks to CI/CD",
+    "Document shell version requirements",
+    "Use shellcheck with POSIX preset"
+  ],
+  "lessons_learned": [
+    "Bash builtins may not be available in all environments",
+    "Shebang doesn't guarantee execution environment",
+    "Process substitution requires Bash 3.1+",
+    "POSIX compliance increases portability"
+  ],
+  "related_issues": [
+    "Bash version incompatibilities",
+    "Alpine Linux/BusyBox compatibility",
+    "Associative array portability (declare -A)"
+  ],
+  "similar_patterns": [
+    "declare -A (associative arrays)",
+    "readarray (alias for mapfile)",
+    "[[...]] (extended test syntax)",
+    "compgen (completion generation)"
+  ],
+  "tools_used": [
+    "bash",
+    "grep",
+    "sed",
+    "while-read",
+    "process-substitution"
+  ],
+  "references": [
+    "https://www.gnu.org/software/bash/manual/html_node/Arrays.html",
+    "https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html",
+    "https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html",
+    "https://www.shellcheck.net/wiki/SC2207",
+    "https://mywiki.wooledge.org/Bashism"
+  ],
+  "postmortem_action_items": [
+    {
+      "action": "Add POSIX shell compliance check to CI/CD",
+      "owner": "DevOps",
+      "due_date": "2025-01-22",
+      "priority": "high"
+    },
+    {
+      "action": "Audit other shell scripts for Bash builtins",
+      "owner": "Development",
+      "due_date": "2025-01-30",
+      "priority": "medium"
+    },
+    {
+      "action": "Document shell requirements in README",
+      "owner": "Documentation",
+      "due_date": "2025-01-20",
+      "priority": "low"
+    }
+  ],
+  "blog_readiness": true,
+  "blog_appeal": "High - useful for developers learning shell scripting, portability issues common",
+  "ai_learning_value": "High - clear pattern identification of Bash vs POSIX, anti-patterns vs patterns",
+  "junior_engineer_value": "High - teaches shell environment concepts, debugging shell errors",
+  "contributors": [
+    {
+      "name": "Claude AI",
+      "role": "analysis-and-documentation",
+      "date": "2025-01-15"
+    }
+  ]
+}

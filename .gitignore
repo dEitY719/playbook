@@ -1,0 +1,37 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+.~*
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# Media processing
+media/**/temp/
+media/**/*.tmp.*
+
+# Backup
+*.backup
+*.bak

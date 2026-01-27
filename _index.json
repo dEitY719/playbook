@@ -1,46 +1,34 @@
 {
   "version": "2.0",
-  "format": "hybrid-jekyll-compatible",
-  "description": "Hybrid RCA structure: single .md files with YAML frontmatter + centralized media in _assets/",
-  "generated": "2025-01-15T15:45:00Z",
+  "generated": "2026-01-27T00:00:00Z",
   "total_documents": 1,
   "documents": [
     {
-      "id": "2025-01-15-mapfile-compatibility",
-      "title": "Bash mapfile Command Compatibility Issues",
-      "path": "docs/analysis/2025-01-15-mapfile-compatibility.md",
-      "slug": "mapfile-compatibility",
-      "date_created": "2025-01-15T15:30:00Z",
-      "date_modified": "2025-01-15T15:45:00Z",
+      "id": "2025-01-19-shell-function-propagation",
+      "title": "Shell Function Propagation Issues in Zsh: Subshell Isolation and Alias/Function Naming Conflicts",
+      "slug": "shell-function-propagation-issues",
+      "date": "2025-01-19",
       "project": "dotfiles",
-      "category": "shell-scripting",
-      "severity": "medium",
-      "tags": ["bash", "posix", "compatibility", "shell-script", "mapfile"],
-      "target_audiences": ["postmortem", "blog", "ai-learning", "junior-engineers"],
-      "keywords": ["mapfile", "while-read", "posix-compatibility", "bash-internals", "litellm"],
-      "summary": "mapfile is Bash 4.0+ only; POSIX-compatible while-read alternative explained",
+      "category": "shell-initialization",
+      "source_type": "rca",
+      "severity": "high",
+      "tags": ["zsh", "bash", "shell-initialization", "subshell", "function-propagation", "alias-conflict"],
+      "summary": "Two critical bugs in dotfiles shell initialization solved",
       "solution_type": "code-refactor",
-      "impact_level": "high",
-      "time_to_fix_minutes": 5,
-      "word_count": 2847,
-      "reading_time_minutes": 12,
-      "difficulty_level": "intermediate",
-      "blog_ready": true,
-      "ai_learning_value": "High",
-      "junior_engineer_value": "High"
+      "difficulty_level": "advanced",
+      "reading_time_minutes": 15,
+      "file_path": "docs/analysis/2025-01-19-shell-function-propagation-issues.md",
+      "automation_generated": false
     }
   ],
-  "categories": {
-    "shell-scripting": 1,
-    "docker": 0,
-    "database": 0,
-    "python": 0,
-    "devops": 0
-  },
-  "audiences": {
-    "postmortem": 1,
-    "blog": 1,
-    "ai-learning": 1,
-    "junior-engineers": 1
+  "automation": {
+    "last_jira_sync": null,
+    "last_confluence_sync": null,
+    "work_log_tracking_enabled": true,
+    "templates": {
+      "worklog": "docs/worklog-templates/template-worklog.md",
+      "jira": "docs/worklog-templates/template-jira.md",
+      "confluence": "docs/worklog-templates/template-confluence.md"
+    }
   }
 }

@@ -1,138 +1,118 @@
-# RCA Knowledge Base
+# RCA Knowledge Repository
 
-Root Cause Analysis documentation for incidents, bug fixes, and technical challenges. Serves as a repository for postmortem reviews, technical blogging, AI tool training, and junior engineer onboarding.
+Root Cause Analysis documentation for technical incidents, bug fixes, and problem-solving insights.
 
 ## Purpose
 
-This repository captures technical challenges and their solutions in a structured, multi-audience format:
-
-- **Postmortem Review**: Incident investigation and prevention planning
-- **Technical Blog**: Publication-ready learning content
+This repository serves four distinct audiences:
+- **Postmortem Reviews**: Incident analysis and prevention planning
+- **Technical Blogs**: Narrative-driven learning content
 - **AI Tool Training**: Pattern recognition and anti-pattern learning
 - **Junior Engineer Onboarding**: Educational reference material
 
-## Organization
-
-**Hybrid Jekyll-Compatible Structure:**
+## Structure
 
 ```
-rca-knowledge/
-├── docs/analysis/
-│   ├── 2025-01-15-mapfile-compatibility.md    ← Single file with YAML frontmatter
-│   ├── 2025-01-16-docker-networking.md
-│   └── ...
-├── _assets/                                    ← Centralized media files
-│   ├── mapfile-compatibility-diagram.png
-│   ├── docker-networking-topology.svg
-│   └── ...
-├── _index.json                                 ← Searchable master index
-├── README.md
-└── .gitignore
+docs/analysis/
+├── YYYY-MM-DD-{slug}.md           # RCA documents with YAML frontmatter
+├── ...
+_assets/                            # Centralized images/diagrams
+├── {slug}-diagram.png
+├── {slug}-diagram.svg
+_index.json                         # Searchable index
+README.md                           # This file
 ```
 
-**Why This Structure?**
-- **Jekyll-Compatible**: Files work directly with Jekyll blogs, GitHub Pages
-- **Simple & Portable**: Single .md files migrate easily to Medium, Dev.to, personal blogs
-- **YAML Frontmatter**: Metadata in file header (compatible with all markdown processors)
-- **Centralized Assets**: All images/diagrams in one place for easy management
-- **Scalable**: Works with 1 document or 1000+ documents
+## Documents
 
-## Quick Navigation
+### 2025-01-19: Shell Function Propagation Issues in Zsh
 
-Browse by category:
+**File**: `docs/analysis/2025-01-19-shell-function-propagation-issues.md`
 
-- [Shell Scripting](#shell-scripting)
-- [Docker & Containers](#docker--containers)
-- [Database](#database)
-- [Python & Backend](#python--backend)
-- [DevOps & Infrastructure](#devops--infrastructure)
+**Summary**: Two critical bugs in dotfiles shell initialization:
+1. Subshell isolation broke function definition propagation (`src()` function missing)
+2. Alias/function name conflicts caused zsh parse errors on reload
 
-### Shell Scripting
+**Severity**: High
+**Reading Time**: 15 minutes
+**Keywords**: zsh, bash, subshell, function-propagation, alias-conflict, dotfiles
 
-- [2025-01-15: Bash mapfile Compatibility](./docs/analysis/2025-01-15-mapfile-compatibility.md)
-
-### Docker & Containers
-
-(No entries yet)
-
-### Database
-
-(No entries yet)
-
-### Python & Backend
-
-(No entries yet)
-
-### DevOps & Infrastructure
-
-(No entries yet)
-
-## Usage
-
-### Reading RCA Documents
-
-1. Start with **Executive Summary** (10-second overview)
-2. Read **Problem & Context** for situation understanding
-3. Review **Root Cause Analysis** for technical depth
-4. Check **Solution** for how to fix
-5. Study **Deep Dive** for principles and learning
-6. Use **Prevention Checklist** for future work
-7. Reference **Quick Reference** for quick lookup
-
-### Creating New RCA
-
-Use Claude's `write-rca-doc` skill during conversation:
-
-```bash
-/write-rca-doc              # Auto-generates from conversation context
-/write-rca-doc --commit     # Auto-commit to git
-/write-rca-doc --blog       # Blog-first optimization
-```
-
-The skill will:
-1. Analyze conversation
-2. Extract problem and solution
-3. Create structured document
-4. Generate metadata
-5. Update this index
-
-## Metadata Index
-
-Master index of all RCA documents: See `_index.json`
-
-Query by:
-- **Category**: shell-scripting, docker, database, python, devops
-- **Severity**: low, medium, high, critical
-- **Audience**: postmortem, blog, ai-learning, junior-engineers
-- **Tags**: bash, mapfile, posix, etc.
-
-## Contributing
-
-When creating RCA documents with `/write-rca-doc` skill:
-
-1. **File Format**: Creates `docs/analysis/YYYY-MM-DD-{slug}.md` (Jekyll-compatible)
-2. **YAML Frontmatter**: Metadata stored in file header (no separate JSON needed)
-3. **Media**: Place images/diagrams in `_assets/` folder
-4. **Structure**: Auto-generates all 9 sections:
-   - Executive Summary
-   - Problem & Context
-   - Root Cause Analysis
-   - Solution & Implementation
-   - Deep Dive
-   - Compatibility Matrix
-   - Prevention Checklist
-   - Related Issues
-   - Quick Reference
-5. **Index**: Auto-updates `_index.json`
-6. **Git**: Commit with message: `docs: Add RCA for {issue-slug}`
-
-## Statistics
-
-- Total Documents: 1
-- Categories: 1
-- Last Updated: 2025-01-15
+**Key Insights**:
+- Command substitution `$(...)` creates subshells where side effects (function definitions) don't propagate
+- Exit codes must be captured immediately: `cmd; exit=$?` not `exit=$(cmd)`
+- Identical alias/function names cause parse errors on reload but not on virgin load
+- Solution: Direct parent shell sourcing + `unalias` loop for safe reloads
 
 ---
 
-**Maintained**: 2025-01-15 onwards
-**Tools**: Claude AI, write-rca-doc skill
+## Quick Navigation
+
+### By Severity
+- **High**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+
+### By Category
+- **shell-initialization**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+
+### By Project
+- **dotfiles**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+
+### By Target Audience
+- **postmortem**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+- **blog**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+- **ai-learning**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+- **junior-engineers**: [Shell Function Propagation Issues (2025-01-19)](#2025-01-19-shell-function-propagation-issues)
+
+---
+
+## Format
+
+All documents use **hybrid Jekyll-compatible format**:
+- YAML frontmatter for metadata
+- Single `.md` files (no separate directories)
+- Relative paths for portability
+- GitHub Pages compatible
+
+### Using Documents
+
+**For Personal Blog**:
+Copy `.md` files to your blog engine (Medium, Dev.to, Ghost, etc.)
+
+**For Jekyll/GitHub Pages**:
+Files work directly - no conversion needed
+
+**For Notion/Obsidian**:
+Import `.md` files; frontmatter preserved as properties
+
+---
+
+## Contributing
+
+When adding new RCA documents:
+
+1. Create document with naming: `YYYY-MM-DD-{slug}.md`
+2. Include complete YAML frontmatter
+3. Follow 9-section structure
+4. Place diagrams in `_assets/` folder
+5. Update `_index.json`
+
+---
+
+## Repository Statistics
+
+- **Total Documents**: 1
+- **Total Word Count**: ~2,100
+- **Average Reading Time**: 15 minutes
+- **Projects Covered**: 1 (dotfiles)
+- **Severity Distribution**:
+  - High: 1
+  - Medium: 0
+  - Low: 0
+
+---
+
+## License
+
+Technical documentation for internal use and learning purposes.
+
+**Generated**: 2025-01-19
+**Last Updated**: 2025-01-19

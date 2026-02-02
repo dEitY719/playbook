@@ -20,9 +20,8 @@ node_modules/
 dist/
 build/
 
-# Logs
+# Logs (*.log ignored, but logs/work_log.txt is tracked as SSOT)
 *.log
-logs/
 
 # Environment
 .env

@@ -135,3 +135,4 @@
 [2026-02-25 10:14:13] [DOTFILES-AUTO] | chore | other | - | 905ae8f | chore(alias): updage cd-jv alias
 [2026-02-25 12:35:19] [DOTFILES-AUTO] | fix | other | - | fdc0e55 | fix(gcp_scan): Remove subshell tracing bug in commit list output
 [2026-02-25 12:41:46] [DOTFILES-AUTO] | feat | other | - | f0ccc1b | feat(hooks): Add pipe-loop anti-pattern detection to pre-commit hook
+[2026-02-25 12:49:02] [DOTFILES-AUTO] | fix | other | - | d23e77f | fix(gcp_scan): Add zsh compatibility for debug tracing

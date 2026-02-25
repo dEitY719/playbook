@@ -138,3 +138,4 @@
 [2026-02-25 12:49:02] [DOTFILES-AUTO] | fix | other | - | d23e77f | fix(gcp_scan): Add zsh compatibility for debug tracing
 [2026-02-25 12:49:47] [DOTFILES-AUTO] | feat | other | - | f513759 | feat(hooks): Add zsh emulation compatibility check
 [2026-02-25 15:04:45] [DOTFILES-AUTO] | fix | other | - | 41c361c | fix(zsh): Enable zsh-autosuggestions plugin in Oh My Zsh
+[2026-02-25 17:29:20] [DOTFILES-AUTO] | refactor | other | - | 72e3b61 | refactor(alias): Improve jira-mcp directory alias hierarchy

@@ -144,3 +144,4 @@
 [2026-02-27 14:32:32] [DOTFILES-AUTO] | docs | other | - | d1e706f | docs(setup): Add explicit SSL_CERT_FILE output messages for clarity
 [2026-02-27 14:35:28] [DOTFILES-AUTO] | chore | other | - | dda74e1 | chore: rename JIRAvis -> jiravis
 [2026-02-27 14:37:14] [DOTFILES-AUTO] | feat | other | - | 1de3cdf | feat(ssl): Add ssl-help command for certificate diagnostics
+[2026-02-27 14:45:36] [DOTFILES-AUTO] | docs | other | - | 536c49f | docs(setup): Add explicit SSL_CERT_FILE configuration confirmation

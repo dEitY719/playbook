@@ -143,3 +143,4 @@
 [2026-02-27 14:30:57] [DOTFILES-AUTO] | feat | other | - | 002d95f | feat(setup): Configure SSL_CERT_FILE for corporate proxy
 [2026-02-27 14:32:32] [DOTFILES-AUTO] | docs | other | - | d1e706f | docs(setup): Add explicit SSL_CERT_FILE output messages for clarity
 [2026-02-27 14:35:28] [DOTFILES-AUTO] | chore | other | - | dda74e1 | chore: rename JIRAvis -> jiravis
+[2026-02-27 14:37:14] [DOTFILES-AUTO] | feat | other | - | 1de3cdf | feat(ssl): Add ssl-help command for certificate diagnostics

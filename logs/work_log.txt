@@ -142,3 +142,4 @@
 [2026-02-25 18:07:02] [DOTFILES-AUTO] | refactor | other | - | 93f0a08 | refactor(aliases): remove jira-cli alias
 [2026-02-27 14:30:57] [DOTFILES-AUTO] | feat | other | - | 002d95f | feat(setup): Configure SSL_CERT_FILE for corporate proxy
 [2026-02-27 14:32:32] [DOTFILES-AUTO] | docs | other | - | d1e706f | docs(setup): Add explicit SSL_CERT_FILE output messages for clarity
+[2026-02-27 14:35:28] [DOTFILES-AUTO] | chore | other | - | dda74e1 | chore: rename JIRAvis -> jiravis

@@ -151,3 +151,4 @@
 [2026-02-28 12:00:21] [DOTFILES-AUTO] | fix | other | - | 97e1c85 | fix(zsh): Remove circular reference in zshrc
 [2026-02-28 12:03:00] [DOTFILES-AUTO] | feat | other | - | 5135a65 | feat(shell-common): Auto-load aliases and functions in bash/zsh
 [2026-02-28 12:13:53] [DOTFILES-AUTO] | refactor | other | - | 65710d9 | refactor(git): Defer SSH test to git_ssh_check
+[2026-02-28 17:50:24] [DOTFILES-AUTO] | fix | other | - | 728ad1a | fix(setup): Add global setup mode management and auto-proxy cleanup

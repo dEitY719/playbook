@@ -149,3 +149,4 @@
 [2026-02-28 11:51:55] [DOTFILES-AUTO] | feat | other | - | 3403a40 | feat(bash): Auto-switch to zsh on shell startup
 [2026-02-28 11:57:44] [DOTFILES-AUTO] | feat | other | - | ff4d915 | feat(dotfiles): Manage bash and zsh configs via symlinks
 [2026-02-28 12:00:21] [DOTFILES-AUTO] | fix | other | - | 97e1c85 | fix(zsh): Remove circular reference in zshrc
+[2026-02-28 12:03:00] [DOTFILES-AUTO] | feat | other | - | 5135a65 | feat(shell-common): Auto-load aliases and functions in bash/zsh

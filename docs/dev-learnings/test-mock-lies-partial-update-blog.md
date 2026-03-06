@@ -14,7 +14,8 @@
 
 ### 🔥 나의 현상: "분명히 고쳤는데?"
 
-Jira CLI에서 `--status "In Progress"` 옵션을 넣었더니 이런 에러가 났습니다:
+[JIRAvis](https://github.com/dev-team-404/JIRAvis.git)는 Jira 이슈를 터미널에서 조회·업데이트할 수 있는 CLI 도구입니다.
+이 프로젝트를 개발하던 중, `--status "In Progress"` 옵션을 넣었더니 이런 에러가 났습니다:
 
 ```
 [ERROR] JIRA_VALIDATION_ERROR: Status 'In Progress' is not available for JIRAVIS-2.

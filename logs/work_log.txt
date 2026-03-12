@@ -156,3 +156,4 @@
 [2026-03-04 11:26:59] [DOTFILES-AUTO] | feat | other | - | 083abfe | feat: Disable telemetry in Claude Code settings
 [2026-03-04 11:27:30] [DOTFILES-AUTO] | feat | other | - | 610bde7 | feat: Disable telemetry in Claude Code settings
 [2026-03-04 13:30:02] [DOTFILES-AUTO] | feat | other | - | 3724868 | feat: Add psgrep function for process pattern matching
+[2026-03-12 19:44:49] [DOTFILES-AUTO] | feat | other | - | f3db9d9 | feat(hooks): allow *.corp.example env files in pre-commit allowlist

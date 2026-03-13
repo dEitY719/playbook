@@ -162,3 +162,4 @@
 [2026-03-13 13:51:44] [DOTFILES-AUTO] | feat | other | - | 29914d5 | feat(git): add git_clean_local to delete all local branches except main
 [2026-03-13 13:56:09] [DOTFILES-AUTO] | fix | other | - | 4874427 | fix(git): protect current branch in git_clean_local
 [2026-03-13 15:36:20] [DOTFILES-AUTO] | refactor | other | - | e1a8d4f | refactor(shell-common): extract SSAI host vars and rename ssh aliases
+[2026-03-13 15:38:47] [DOTFILES-AUTO] | feat | other | - | ba6da0d | feat(shell-common): add ssai scp push/pull functions

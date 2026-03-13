@@ -160,3 +160,4 @@
 [2026-03-13 11:11:53] [DOTFILES-AUTO] | fix | other | - | fd4c505 | fix(ci): install zsh before shell verification step
 [2026-03-13 13:47:52] [DOTFILES-AUTO] | fix | other | - | 5652475 | fix(ci): remove Python test job without scripts/test runner
 [2026-03-13 13:51:44] [DOTFILES-AUTO] | feat | other | - | 29914d5 | feat(git): add git_clean_local to delete all local branches except main
+[2026-03-13 13:56:09] [DOTFILES-AUTO] | fix | other | - | 4874427 | fix(git): protect current branch in git_clean_local

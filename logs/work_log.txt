@@ -163,3 +163,4 @@
 [2026-03-13 13:56:09] [DOTFILES-AUTO] | fix | other | - | 4874427 | fix(git): protect current branch in git_clean_local
 [2026-03-13 15:36:20] [DOTFILES-AUTO] | refactor | other | - | e1a8d4f | refactor(shell-common): extract SSAI host vars and rename ssh aliases
 [2026-03-13 15:38:47] [DOTFILES-AUTO] | feat | other | - | ba6da0d | feat(shell-common): add ssai scp push/pull functions
+[2026-03-13 15:44:24] [DOTFILES-AUTO] | refactor | other | - | 1c4effe | refactor(shell-common): generic scp-pull/push by server name

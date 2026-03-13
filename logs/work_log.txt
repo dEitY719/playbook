@@ -167,3 +167,4 @@
 [2026-03-13 15:49:41] [DOTFILES-AUTO] | refactor | other | - | 1c21848 | refactor(shell-common): rename scp-pull/push to pull-file/push-file
 [2026-03-13 16:42:06] [DOTFILES-AUTO] | feat | other | - | 1796a8f | feat(ssh): manage ~/.ssh/config via dotfiles symlink
 [2026-03-13 16:46:50] [DOTFILES-AUTO] | refactor | other | - | cbcb179 | refactor(ssh): replace custom scp wrappers with ssh-help
+[2026-03-13 17:03:31] [DOTFILES-AUTO] | feat | other | - | 29b1c23 | feat(ssh): add config.local.example for private SSH notes

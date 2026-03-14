@@ -171,3 +171,4 @@
 [2026-03-13 17:07:13] [DOTFILES-AUTO] | fix | other | - | e70a009 | fix(ssh): address code review feedback
 [2026-03-13 17:41:20] [DOTFILES-AUTO] | fix | other | - | 1c2869b | fix(ssh-help): prevent glob expansion of Host * in host list
 [2026-03-14 09:56:58] [DOTFILES-AUTO] | feat | other | - | 0f91e34 | feat(hooks): allow .env.<prefix>.example pattern in pre-commit
+[2026-03-14 09:58:31] [DOTFILES-AUTO] | fix | other | - | 27ad09b | fix(hooks): unify env allow regex to support unlimited prefix segments

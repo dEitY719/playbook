@@ -55,7 +55,7 @@ README.md                   # Main navigation
 
 ### Do's
 - DO write incidents while fresh (within 2 days of root cause identification)
-- DO include YAML frontmatter: title, date, project, category, severity, tags, solution_type
+- DO include YAML frontmatter: title, date, project, category, severity, tags, summary, solution_type
 - DO link to related documents using relative paths: `[link](./docs/analysis/YYYY-MM-DD-slug.md)`
 - DO include both problem description and solution implementation
 - DO use clear section headers for navigation
@@ -285,4 +285,4 @@ Before committing new RCA documents:
 
 **Generated**: 2025-02-02
 **Last Updated**: 2026-03-14
-**Version**: 1.1
+**Version**: 1.2

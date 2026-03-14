@@ -156,3 +156,19 @@
 [2026-03-04 11:26:59] [DOTFILES-AUTO] | feat | other | - | 083abfe | feat: Disable telemetry in Claude Code settings
 [2026-03-04 11:27:30] [DOTFILES-AUTO] | feat | other | - | 610bde7 | feat: Disable telemetry in Claude Code settings
 [2026-03-04 13:30:02] [DOTFILES-AUTO] | feat | other | - | 3724868 | feat: Add psgrep function for process pattern matching
+[2026-03-12 19:44:49] [DOTFILES-AUTO] | feat | other | - | f3db9d9 | feat(hooks): allow *.corp.example env files in pre-commit allowlist
+[2026-03-13 11:11:53] [DOTFILES-AUTO] | fix | other | - | fd4c505 | fix(ci): install zsh before shell verification step
+[2026-03-13 13:47:52] [DOTFILES-AUTO] | fix | other | - | 5652475 | fix(ci): remove Python test job without scripts/test runner
+[2026-03-13 13:51:44] [DOTFILES-AUTO] | feat | other | - | 29914d5 | feat(git): add git_clean_local to delete all local branches except main
+[2026-03-13 13:56:09] [DOTFILES-AUTO] | fix | other | - | 4874427 | fix(git): protect current branch in git_clean_local
+[2026-03-13 15:36:20] [DOTFILES-AUTO] | refactor | other | - | e1a8d4f | refactor(shell-common): extract SSAI host vars and rename ssh aliases
+[2026-03-13 15:38:47] [DOTFILES-AUTO] | feat | other | - | ba6da0d | feat(shell-common): add ssai scp push/pull functions
+[2026-03-13 15:44:24] [DOTFILES-AUTO] | refactor | other | - | 1c4effe | refactor(shell-common): generic scp-pull/push by server name
+[2026-03-13 15:49:41] [DOTFILES-AUTO] | refactor | other | - | 1c21848 | refactor(shell-common): rename scp-pull/push to pull-file/push-file
+[2026-03-13 16:42:06] [DOTFILES-AUTO] | feat | other | - | 1796a8f | feat(ssh): manage ~/.ssh/config via dotfiles symlink
+[2026-03-13 16:46:50] [DOTFILES-AUTO] | refactor | other | - | cbcb179 | refactor(ssh): replace custom scp wrappers with ssh-help
+[2026-03-13 17:03:31] [DOTFILES-AUTO] | feat | other | - | 29b1c23 | feat(ssh): add config.local.example for private SSH notes
+[2026-03-13 17:07:13] [DOTFILES-AUTO] | fix | other | - | e70a009 | fix(ssh): address code review feedback
+[2026-03-13 17:41:20] [DOTFILES-AUTO] | fix | other | - | 1c2869b | fix(ssh-help): prevent glob expansion of Host * in host list
+[2026-03-14 09:56:58] [DOTFILES-AUTO] | feat | other | - | 0f91e34 | feat(hooks): allow .env.<prefix>.example pattern in pre-commit
+[2026-03-14 09:58:31] [DOTFILES-AUTO] | fix | other | - | 27ad09b | fix(hooks): unify env allow regex to support unlimited prefix segments

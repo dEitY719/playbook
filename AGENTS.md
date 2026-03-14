@@ -13,6 +13,7 @@
 **Repository Structure**:
 ```
 docs/analysis/              # RCA documents: YYYY-MM-DD-{slug}.md
+docs/dev-learnings/         # Developer blog posts: {topic}-blog[-v2].md
 docs/jira-records/          # Weekly JIRA work logs
 docs/confluence-guides/     # Confluence-synced guides
 docs/worklog-templates/     # Template generators
@@ -50,7 +51,7 @@ README.md                   # Main navigation
 - **Naming convention**: `YYYY-MM-DD-{slug}.md` for all RCA documents
 - **Frontmatter required**: Every document must include complete YAML header
 - **Asset storage**: All images/diagrams in `_assets/` folder with relative paths
-- **No emojis**: Preserve token efficiency and cross-platform rendering
+- **No emojis in AGENTS.md**: Preserve token efficiency and cross-platform rendering (blog content in docs/dev-learnings/ is exempt)
 
 ### Do's
 - DO write incidents while fresh (within 2 days of root cause identification)
@@ -128,11 +129,21 @@ pytest tests/links/ -v
 ## Naming Conventions
 
 ### Markdown Files
+
+RCA Documents (`docs/analysis/`):
 - **Format**: `YYYY-MM-DD-{slug}.md`
 - **Slug**: Lowercase, dash-separated, no special chars
 - **Examples**:
   - `2025-01-19-shell-function-propagation-issues.md`
   - `2025-02-15-database-transaction-deadlock.md`
+
+Developer Blog Posts (`docs/dev-learnings/`):
+- **Format**: `{topic}-blog[-v2].md`
+- **Slug**: Lowercase, dash-separated, no date prefix
+- **Versioning**: Append `-v2`, `-v3` for revised editions
+- **Examples**:
+  - `test-mock-lies-partial-update-blog.md`
+  - `sso-prod-deploy-disaster-blog-v2.md`
 
 ### Asset Files
 - **Format**: `{slug}-{type}.{ext}`
@@ -207,13 +218,14 @@ audience:
 
 Use this to navigate repository domains and automation:
 
-- **[Document Creation & Templates](./docs/worklog-templates/)** — Template generators for worklog, JIRA, Confluence
 - **[RCA Documents](./docs/analysis/)** — Core incident analysis, organized by date
-- **[Asset Management](./docs/_assets/)** — Diagrams, screenshots, supporting media
+- **[Developer Blog Posts](./docs/dev-learnings/)** — Narrative-driven learning content: postmortems, technical stories
+- **[Document Creation & Templates](./docs/worklog-templates/)** — Template generators for worklog, JIRA, Confluence
 - **[JIRA Integration](./docs/jira-records/)** — Weekly work log records
 - **[Confluence Guides](./docs/confluence-guides/)** — Documentation synced from Confluence
-- **[Searchable Index](./docs/_index.json)** — Machine-readable catalog for automation
-- **[Main Navigation](./docs/README.md)** — Central hub and quick links
+- **[Asset Management](./_assets/)** — Diagrams, screenshots, supporting media
+- **[Searchable Index](./_index.json)** — Machine-readable catalog for automation
+- **[Main Navigation](./README.md)** — Central hub and quick links
 
 ---
 
@@ -272,5 +284,5 @@ Before committing new RCA documents:
 ---
 
 **Generated**: 2025-02-02
-**Last Updated**: 2025-02-02
-**Version**: 1.0
+**Last Updated**: 2026-03-14
+**Version**: 1.1

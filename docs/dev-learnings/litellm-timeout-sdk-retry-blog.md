@@ -14,7 +14,7 @@
 
 ### 🔥 나의 현상: "150초를 줬는데도 timeout이라고?"
 
-[JIRAvis](https://github.com/dev-team-404/JIRAvis.git)의 이메일 시각화 기능은 LLM에게 마크다운 브리핑을 보내면, Jiravis 브랜딩이 적용된 예쁜 HTML 이메일로 변환해주는 기능입니다. 새벽 배치로 돌리면 잘 되는데, 사내 테스트 중 "테스트 발송" 버튼을 누르면 `HTTP 504 Gateway Timeout`이 뜨는 문제가 보고됐습니다.
+[JIRAvis](https://github.com/dev-team-404/JIRAvis.git)의 이메일 시각화 기능은 LLM에게 마크다운 브리핑을 보내면, JIRAvis 브랜딩이 적용된 예쁜 HTML 이메일로 변환해주는 기능입니다. 새벽 배치로 돌리면 잘 되는데, 사내 테스트 중 "테스트 발송" 버튼을 누르면 `HTTP 504 Gateway Timeout`이 뜨는 문제가 보고됐습니다.
 
 "아, nginx timeout 문제겠지." 동료 3명이 문서를 쓰고, 원인을 분석하고, 해결 계획을 세웠습니다. nginx에 전용 location을 추가하고, visualize timeout을 조정하고, fallback HTML도 개선했습니다. 자신감에 차서 사내 테스트를 돌렸습니다.
 
@@ -150,7 +150,7 @@ DEFAULT_MAX_RETRIES = 2  # retry 2회!
 
 LLM은 100초 동안 열심히 HTML을 만들고 있었는데, **완성 직전에 SDK가 연결을 끊어버리고 처음부터 다시 시작시켰던 겁니다.** 그리고 재시도한 지 5초 만에 바깥 timeout이 전체를 종료시켰습니다.
 
-**LLM이 느린 게 아니었습니다. LLM은 매번 거의 다 만들었는데, SDK가 몰래 시지프스를 시키고 있었습니다.** 🪨
+**LLM이 느린 게 아니었습니다. LLM은 매번 거의 다 만들었는데, SDK가 몰래 시시포스를 시키고 있었습니다.** 🪨
 
 ---
 

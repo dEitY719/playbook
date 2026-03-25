@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDK가 몰래 시시포스를 시키고 있었다</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script>Chart.defaults.animation = false;</script>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.06);
+      --text: #EDEDED; --text-secondary: #888;
+      --accent: #f59e0b; --accent-secondary: #ef4444;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --code-bg: #1a1a2e; --code-border: rgba(255,255,255,0.08);
+      --hero-gradient: linear-gradient(135deg, #1a0a00 0%, #0A0A0A 40%, #0a0a1a 100%);
+      --flow-line: rgba(245,158,11,0.3);
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.06);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #d97706; --accent-secondary: #dc2626;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+      --code-bg: #f1f5f9; --code-border: rgba(0,0,0,0.08);
+      --hero-gradient: linear-gradient(135deg, #fef3c7 0%, #FAFAF9 40%, #ede9fe 100%);
+      --flow-line: rgba(217,119,6,0.25);
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4 {
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+      color: var(--text); letter-spacing: -0.03em; line-height: 1.15;
+      text-wrap: balance;
+    }
+    h1 { font-weight: 800; font-size: clamp(2.5rem, 5vw, 3.5rem); }
+    h2 { font-weight: 700; font-size: clamp(2rem, 3.5vw, 2.5rem); }
+    h3 { font-weight: 600; font-size: 1.5rem; }
+    p, li, td, th, span, label { font-weight: 400; color: var(--text); }
+    .text-secondary { color: var(--text-secondary); }
+
+    .container {
+      max-width: 960px; margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 28px;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: var(--hero-gradient);
+      padding: 120px 0 80px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 80%, var(--accent), transparent 60%);
+      opacity: 0.04; pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block; font-size: 0.8rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent); margin-bottom: 20px;
+      font-family: 'Inter', sans-serif;
+    }
+    .hero h1 { margin-bottom: 20px; }
+    .hero-subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      max-width: 640px; margin: 0 auto; line-height: 1.7;
+    }
+    .hero-rock {
+      font-size: 4rem; margin-top: 32px; opacity: 0.15;
+      display: block;
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+      display: grid; gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      margin: 64px 0;
+    }
+    .stat-card {
+      text-align: center; padding: 32px 20px;
+    }
+    .stat-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 3rem; font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 0.85rem; color: var(--text-secondary);
+      font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ===== SECTION ===== */
+    .content-section {
+      padding: 80px 0;
+    }
+    .content-section + .content-section {
+      border-top: 1px solid var(--border);
+    }
+    .section-tag {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--accent); margin-bottom: 12px;
+      font-family: 'Inter', sans-serif;
+    }
+    .section-desc {
+      font-size: 1.05rem; color: var(--text-secondary);
+      margin-top: 12px; max-width: 680px; line-height: 1.8;
+    }
+
+    /* ===== TEST TABLE ===== */
+    .test-table {
+      width: 100%; border-collapse: collapse;
+      margin: 32px 0; font-size: 0.95rem;
+    }
+    .test-table th {
+      text-align: left; padding: 14px 16px;
+      font-size: 0.75rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-secondary);
+      font-weight: 600; border-bottom: 2px solid var(--border);
+      font-family: 'Inter', sans-serif;
+    }
+    .test-table td {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .test-table tr:last-child td { border-bottom: none; }
+    .test-table .row-success {
+      background: rgba(16, 185, 129, 0.06);
+    }
+    .test-table .row-success td {
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 20px; font-size: 0.78rem;
+      font-weight: 600; font-family: 'Inter', sans-serif;
+    }
+    .badge-fail { background: rgba(244,63,94,0.12); color: var(--negative); }
+    .badge-success { background: rgba(16,185,129,0.12); color: var(--positive); }
+
+    /* ===== CODE BLOCK ===== */
+    .code-block {
+      background: var(--code-bg); border: 1px solid var(--code-border);
+      border-radius: 10px; padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; line-height: 1.7;
+      overflow-x: auto; margin: 20px 0;
+      color: var(--text);
+    }
+    .code-block .comment { color: var(--text-secondary); }
+    .code-block .highlight { color: var(--accent); font-weight: 600; }
+    .code-block .str { color: var(--positive); }
+    .code-block .keyword { color: var(--accent-secondary); }
+
+    /* ===== FLOW DIAGRAM ===== */
+    .flow-container {
+      position: relative; margin: 48px 0;
+      padding-left: 32px;
+    }
+    .flow-line {
+      position: absolute; left: 14px; top: 0; bottom: 0;
+      width: 2px; background: var(--flow-line);
+    }
+    .flow-step {
+      position: relative; margin-bottom: 24px;
+      padding: 20px 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .flow-step::before {
+      content: ''; position: absolute;
+      left: -25px; top: 24px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent); border: 3px solid var(--bg);
+    }
+    .flow-step.flow-danger::before {
+      background: var(--negative);
+    }
+    .flow-step.flow-success::before {
+      background: var(--positive);
+    }
+    .flow-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem; color: var(--accent);
+      font-weight: 600; margin-bottom: 6px;
+    }
+    .flow-title {
+      font-weight: 600; font-size: 1rem; margin-bottom: 4px;
+    }
+    .flow-desc {
+      font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    /* ===== COMPARISON ===== */
+    .compare-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+      margin: 32px 0;
+    }
+    .compare-card { position: relative; overflow: hidden; }
+    .compare-label {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.1em; font-weight: 700;
+      margin-bottom: 12px; font-family: 'Inter', sans-serif;
+    }
+    .compare-label.before { color: var(--negative); }
+    .compare-label.after { color: var(--positive); }
+
+    /* ===== LESSONS ===== */
+    .lesson-card {
+      padding: 32px; margin-bottom: 20px;
+    }
+    .lesson-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 2.5rem; font-weight: 800;
+      color: var(--accent); opacity: 0.25;
+      line-height: 1; margin-bottom: 8px;
+    }
+    .lesson-title {
+      font-size: 1.15rem; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .lesson-desc {
+      font-size: 0.95rem; color: var(--text-secondary); line-height: 1.8;
+    }
+
+    /* ===== CHART ===== */
+    .chart-wrapper {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 40px;
+      margin: 32px 0;
+    }
+    .chart-container { height: 360px; position: relative; }
+
+    /* ===== CALLOUT ===== */
+    .callout {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      margin: 32px 0;
+      font-size: 1.05rem; line-height: 1.8;
+    }
+    .callout strong { color: var(--accent); }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      text-align: center; padding: 64px 0;
+      border-top: 1px solid var(--border);
+    }
+    .footer-emoji { font-size: 2rem; margin-bottom: 12px; }
+    .footer-text {
+      font-size: 0.9rem; color: var(--text-secondary); line-height: 1.8;
+      max-width: 520px; margin: 0 auto;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .animate.delay-4 { animation-delay: 0.4s; }
+    .animate.delay-5 { animation-delay: 0.5s; }
+    .animate.delay-6 { animation-delay: 0.6s; }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu { display: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .card, .flow-step, .chart-wrapper { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; }
+
+    /* ===== MENU ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+      .hero { padding: 80px 0 60px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .content-section { padding: 56px 0; }
+      .chart-container { height: 280px; }
+    }
+    @media (max-width: 375px) {
+      body { overflow-x: hidden; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-value { font-size: 2.2rem; }
+      .card { padding: 20px; }
+      .code-block { font-size: 0.75rem; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;padding:8px 16px;background:var(--accent);color:white;text-decoration:none;border-radius:4px;" onfocus="this.style.cssText='position:fixed;left:16px;top:16px;z-index:10000;padding:8px 16px;background:var(--accent);color:white;text-decoration:none;border-radius:4px;'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;'">Skip to content</a>
+
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>Download PNG</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>Print / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content" role="main">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-tag animate">DEV LEARNINGS &middot; DEBUGGING WAR STORY</div>
+        <h1 class="animate delay-1">SDK가 몰래<br>시시포스를 시키고 있었다</h1>
+        <p class="hero-subtitle animate delay-2">
+          3번 연속 timeout인데 LLM이 느린 게 아니었다 — OpenAI SDK가 완성 직전에 끊고 처음부터 다시 시작하고 있었음
+        </p>
+        <span class="hero-rock animate delay-3" aria-hidden="true">🪨</span>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="container">
+      <div class="stats-grid">
+        <div class="card stat-card animate delay-1">
+          <div class="stat-value" style="color:var(--negative)" data-count="3">0</div>
+          <div class="stat-label">연속 실패</div>
+        </div>
+        <div class="card stat-card animate delay-2">
+          <div class="stat-value" data-count="1">0</div>
+          <div class="stat-label">줄 수정으로 해결</div>
+        </div>
+        <div class="card stat-card animate delay-3">
+          <div class="stat-value" style="color:var(--positive)" data-count="79" data-suffix="s">0</div>
+          <div class="stat-label">최종 성공 소요</div>
+        </div>
+        <div class="card stat-card animate delay-4">
+          <div class="stat-value" data-count="12237">0</div>
+          <div class="stat-label">생성된 HTML chars</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TL;DR -->
+    <section class="container content-section">
+      <div class="callout animate delay-2">
+        <strong>TL;DR</strong> — litellm에 <code>timeout</code>을 넘기면 OpenAI SDK의 httpx request timeout이 되고, timeout 시 SDK가 자동 retry(기본 2회)를 시도한다. LLM은 거의 다 만들었는데 매번 처음부터 다시 시작하느라 시간만 낭비하고 있었다. <code>timeout</code> 제거 + <code>num_retries=0</code> 명시 후 79초 만에 성공.
+      </div>
+    </section>
+
+    <!-- PROBLEM -->
+    <section class="container content-section" data-reveal>
+      <div class="section-tag">문제 상황</div>
+      <h2>timeout을 아무리 늘려도<br>계속 실패한다</h2>
+      <p class="section-desc">
+        JIRAvis의 이메일 시각화 기능 — LLM에게 마크다운 브리핑을 보내면 HTML 이메일로 변환. 새벽 배치에서는 잘 되는데, "테스트 발송" 버튼을 누르면 <code>HTTP 504 Gateway Timeout</code>.
+      </p>
+      <p class="section-desc" style="margin-top:12px;">
+        "nginx timeout 문제겠지." 동료 3명이 문서를 쓰고, 원인을 분석하고, timeout을 조정했다. 자신감에 차서 사내 테스트를 돌렸다.
+      </p>
+    </section>
+
+    <!-- TEST RESULTS TABLE -->
+    <section class="container content-section" data-reveal>
+      <div class="section-tag">테스트 결과</div>
+      <h2>3번 올렸는데 3번 실패</h2>
+
+      <div class="card" style="padding:0; overflow:hidden; margin-top:32px;">
+        <table class="test-table">
+          <thead>
+            <tr>
+              <th>테스트</th>
+              <th>Timeout 설정</th>
+              <th>SDK Retry</th>
+              <th>실제 대기</th>
+              <th>결과</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600;">1차</td>
+              <td><code>45s</code> (litellm)</td>
+              <td>발생</td>
+              <td>75s</td>
+              <td><span class="badge badge-fail">timeout_fallback</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">2차</td>
+              <td><code>100s</code> (litellm)</td>
+              <td>발생</td>
+              <td>105s</td>
+              <td><span class="badge badge-fail">timeout_fallback</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">3차</td>
+              <td><code>150s</code> (litellm)</td>
+              <td>발생</td>
+              <td>157s</td>
+              <td><span class="badge badge-fail">timeout_fallback</span></td>
+            </tr>
+            <tr class="row-success">
+              <td style="font-weight:700;">4차</td>
+              <td><code>150s</code> (wait_for only)</td>
+              <td>없음</td>
+              <td>79s</td>
+              <td><span class="badge badge-success">성공</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout" style="margin-top:24px;">
+        매번 로그에 찍힌 한 줄: <code style="color:var(--accent);">openai._base_client - INFO - Retrying request to /chat/completions in 0.49s</code><br>
+        <strong>"Retrying"? 뭘 retry 한다는 거지?</strong>
+      </div>
+    </section>
+
+    <!-- CHART -->
+    <section class="container content-section" data-reveal>
+      <div class="section-tag">데이터 비교</div>
+      <h2>Timeout 설정 vs 실제 대기 시간</h2>
+      <div class="chart-wrapper" style="margin-top:32px;">
+        <div class="chart-container" role="img" aria-label="4차 테스트 결과 비교 차트. timeout 설정값 대비 실제 대기 시간. 1-3차는 모두 실패, 4차만 79초에 성공">
+          <canvas id="testChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROOT CAUSE: FLOW DIAGRAM -->
+    <section class="container content-section">
+      <div class="section-tag" data-reveal>진짜 원인</div>
+      <h2 data-reveal>SDK의 이중 timeout + 자동 retry</h2>
+      <p class="section-desc" data-reveal>
+        <code>timeout</code>이 두 군데에 걸려 있었다. litellm에 전달하는 값과 <code>asyncio.wait_for</code>. litellm의 timeout은 OpenAI SDK → httpx request timeout으로 그대로 전달된다.
+      </p>
+
+      <div class="code-block" style="margin:32px 0;" data-reveal>
+        <span class="comment"># openai/_constants.py</span><br>
+        <span class="keyword">DEFAULT_TIMEOUT</span> = httpx.Timeout(timeout=<span class="highlight">600</span>, connect=5.0)<br>
+        <span class="keyword">DEFAULT_MAX_RETRIES</span> = <span class="highlight">2</span>  <span class="comment"># retry 2회!</span>
+      </div>
+
+      <h3 style="margin:48px 0 24px;" data-reveal>악순환의 메커니즘</h3>
+      <p class="section-desc" style="margin-bottom:32px;" data-reveal>timeout=100s 설정 시 실제로 일어나는 일:</p>
+
+      <div class="flow-container" data-reveal>
+        <div class="flow-line"></div>
+        <div class="flow-step">
+          <div class="flow-time">0초</div>
+          <div class="flow-title">LLM 호출 시작</div>
+          <div class="flow-desc">timeout=100s 설정. LLM: "긴 HTML 생성 중..."</div>
+        </div>
+        <div class="flow-step flow-danger">
+          <div class="flow-time" style="color:var(--negative);">100초</div>
+          <div class="flow-title">httpx가 연결을 끊는다</div>
+          <div class="flow-desc">"100초 지났다! 연결 끊어!" → SDK TimeoutError 발생</div>
+        </div>
+        <div class="flow-step flow-danger">
+          <div class="flow-time" style="color:var(--negative);">100초</div>
+          <div class="flow-title">SDK가 자동 재시도</div>
+          <div class="flow-desc">"에러네? max_retries=2니까 재시도!" → <strong>처음부터 다시 시작</strong></div>
+        </div>
+        <div class="flow-step flow-danger">
+          <div class="flow-time" style="color:var(--negative);">105초</div>
+          <div class="flow-title">asyncio.wait_for가 전체 취소</div>
+          <div class="flow-desc">"100 + 5초 buffer 끝!" → asyncio.TimeoutError → fallback HTML</div>
+        </div>
+      </div>
+
+      <div class="callout" style="border-left-color:var(--negative);">
+        LLM은 매번 거의 다 만들었는데, <strong>완성 직전에 SDK가 연결을 끊어버리고 처음부터 다시 시작시켰다.</strong><br>LLM이 느린 게 아니었다. SDK가 몰래 시시포스를 시키고 있었다. 🪨
+      </div>
+    </section>
+
+    <!-- SOLUTION -->
+    <section class="container content-section">
+      <div class="section-tag" data-reveal>해결</div>
+      <h2 data-reveal>timeout 제거 + retry 비활성화</h2>
+
+      <div class="compare-grid" style="margin-top:40px;" data-reveal>
+        <div class="card compare-card">
+          <div class="compare-label before">BEFORE</div>
+          <div class="code-block" style="margin:0;">
+            kwargs = {<br>
+            &nbsp;&nbsp;<span class="str">"model"</span>: config.llm.model,<br>
+            &nbsp;&nbsp;<span class="str">"messages"</span>: [...],<br>
+            &nbsp;&nbsp;<span class="highlight">"timeout": timeout_s,</span><br>
+            &nbsp;&nbsp;<span class="comment"># ↑ SDK httpx timeout</span><br>
+            &nbsp;&nbsp;<span class="comment"># → retry 유발</span><br>
+            }
+          </div>
+        </div>
+        <div class="card compare-card">
+          <div class="compare-label after">AFTER</div>
+          <div class="code-block" style="margin:0;">
+            kwargs = {<br>
+            &nbsp;&nbsp;<span class="str">"model"</span>: config.llm.model,<br>
+            &nbsp;&nbsp;<span class="str">"messages"</span>: [...],<br>
+            &nbsp;&nbsp;<span class="highlight">"num_retries": 0,</span><br>
+            &nbsp;&nbsp;<span class="comment"># timeout 미전달</span><br>
+            &nbsp;&nbsp;<span class="comment"># → SDK 기본 600초</span><br>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block" style="margin-top:24px;" data-reveal>
+        <span class="comment"># asyncio.wait_for만으로 deadline 제어</span><br>
+        response = <span class="keyword">await</span> asyncio.wait_for(<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;litellm.acompletion(**kwargs),<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;timeout=<span class="highlight">timeout_s</span>,&nbsp;&nbsp;<span class="comment"># 우리의 유일한 deadline</span><br>
+        )
+      </div>
+
+      <div class="callout" style="border-left-color:var(--positive); margin-top:32px;" data-reveal>
+        <strong>4차 테스트: 79초 만에 12,237자 HTML 생성 성공.</strong><br>
+        <code>Retrying request</code> 로그도 없다. LLM은 처음부터 충분히 빨랐다.
+      </div>
+    </section>
+
+    <!-- LESSONS -->
+    <section class="container content-section">
+      <div class="section-tag" data-reveal>교훈</div>
+      <h2 data-reveal>다음에 가져갈 것들</h2>
+
+      <div style="margin-top:40px;">
+        <div class="card lesson-card" data-reveal>
+          <div class="lesson-number">01</div>
+          <div class="lesson-title">timeout은 한 레이어에서만 제어하라</div>
+          <div class="lesson-desc">여러 레이어가 각자 timeout을 가지면, 안쪽 timeout이 먼저 발동해서 바깥 의도와 다른 동작을 유발한다. timeout은 가장 바깥 레이어에서 한 번만 거는 것이 원칙.</div>
+        </div>
+        <div class="card lesson-card" data-reveal>
+          <div class="lesson-number">02</div>
+          <div class="lesson-title">SDK의 기본 retry 정책을 반드시 확인하라</div>
+          <div class="lesson-desc">OpenAI SDK의 DEFAULT_MAX_RETRIES = 2는 일반 API 호출에서는 합리적이지만, 수십 초~수분 걸리는 긴 생성 작업에서는 "거의 완성된 작업을 버리고 처음부터 다시"라는 재앙이 된다.</div>
+        </div>
+        <div class="card lesson-card" data-reveal>
+          <div class="lesson-number">03</div>
+          <div class="lesson-title">"timeout을 늘리면 해결되겠지"는 위험한 가정</div>
+          <div class="lesson-desc">"더 늘리면 되겠지"가 아니라 "왜 매번 정확히 timeout 시점에 실패하지?"라는 질문을 더 일찍 했어야 했다. 로그에 Retrying request가 찍히고 있었는데, 그 한 줄이 근본 원인의 직접적 증거였다.</div>
+        </div>
+        <div class="card lesson-card" data-reveal>
+          <div class="lesson-number">04</div>
+          <div class="lesson-title">동료 코드 리뷰의 위력</div>
+          <div class="lesson-desc">동료 CX의 "timeout 빼도 SDK retry는 남는다. num_retries도 명시적으로 꺼야 한다"라는 한 줄 피드백이 없었으면 num_retries=0을 빠뜨릴 뻔했다. 혼자 디버깅하면 80점, 동료 리뷰까지 하면 100점.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAYER DIAGRAM -->
+    <section class="container content-section">
+      <div class="section-tag" data-reveal>아키텍처</div>
+      <h2 data-reveal>Timeout 전달 체인</h2>
+      <p class="section-desc" data-reveal>문제의 핵심: 여러 레이어가 각자 timeout을 들고 있었다</p>
+
+      <div style="margin-top:40px; display:flex; flex-direction:column; gap:0;" data-reveal>
+        <div class="card" style="border-radius:12px 12px 0 0; border-bottom:none; background:var(--surface); position:relative; z-index:4; padding:20px 28px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">asyncio.wait_for</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">우리의 deadline — 150초</div>
+            </div>
+            <span class="badge badge-success" style="margin-left:auto;">유지</span>
+          </div>
+        </div>
+        <div class="card" style="border-radius:0; border-bottom:none; margin-left:24px; position:relative; z-index:3; padding:20px 28px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">litellm.acompletion</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">timeout 파라미터 → SDK로 전달</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="border-radius:0; border-bottom:none; margin-left:48px; position:relative; z-index:2; padding:20px 28px; border-left:3px solid var(--negative);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--negative)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">OpenAI SDK</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">timeout → httpx, max_retries=2 기본값</div>
+            </div>
+            <span class="badge badge-fail" style="margin-left:auto;">문제 원인</span>
+          </div>
+        </div>
+        <div class="card" style="border-radius:0 0 12px 12px; margin-left:72px; position:relative; z-index:1; padding:20px 28px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path d="M9 12l2 2 4-4"/></svg>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">httpx</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">실제 HTTP 요청 실행 + timeout 적용</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <section class="container footer">
+      <div class="footer-emoji">😎</div>
+      <p class="footer-text">
+        이 버그 덕분에 litellm → OpenAI SDK → httpx의 timeout/retry 전달 체인을 소스 레벨까지 추적하게 됐다.<br>
+        <strong>삽질의 부산물로 얻은 지식은 항상 오래간다.</strong>
+      </p>
+    </section>
+
+  </main>
+
+  <script>
+    // === Menu ===
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+
+    // === Theme ===
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+      if (typeof onThemeChange === 'function') onThemeChange();
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    // === Scroll Reveal ===
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    // === Number Counter ===
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(function(el) {
+        if (el.dataset.counted) return;
+        el.dataset.counted = '1';
+        var target = parseFloat(el.dataset.count);
+        var prefix = el.dataset.prefix || '';
+        var suffix = el.dataset.suffix || '';
+        var start = performance.now();
+        var duration = 1200;
+        (function tick(now) {
+          var p = Math.min((now - start) / duration, 1);
+          var eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + Math.round(target * eased).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        })(start);
+      });
+    }
+    var counterEl = document.querySelector('[data-count]');
+    if (counterEl) {
+      var cObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) { animateCounters(); cObs.disconnect(); }
+        });
+      }, { threshold: 0.3 });
+      cObs.observe(counterEl);
+    }
+
+    // === Download PNG ===
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2, filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = document.title.replace(/\s+/g, '-').toLowerCase() + '.png';
+        a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+
+    // === Chart.js ===
+    var chartsBuilt = false;
+
+    function resetCanvas(id) {
+      var old = document.getElementById(id);
+      if (!old) return null;
+      var parent = old.parentNode;
+      var canvas = document.createElement('canvas');
+      canvas.id = id;
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', '4차 테스트 결과 비교: timeout 설정값 vs 실제 대기 시간');
+      parent.replaceChild(canvas, old);
+      return canvas;
+    }
+
+    function buildCharts() {
+      if (typeof Chart === 'undefined') { console.error('Chart.js not loaded'); return; }
+
+      var isDark = document.documentElement.classList.contains('theme-dark');
+      var textColor = isDark ? '#EDEDED' : '#0f172a';
+      var textSecondary = isDark ? '#888888' : '#64748b';
+      var gridColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
+      var negativeColor = isDark ? '#f43f5e' : '#e11d48';
+      var positiveColor = isDark ? '#10b981' : '#059669';
+      var accentColor = isDark ? '#f59e0b' : '#d97706';
+
+      var ctx = resetCanvas('testChart');
+      if (!ctx) return;
+
+      if (window.testChartInstance) {
+        try { window.testChartInstance.destroy(); } catch(e) {}
+      }
+
+      window.testChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['1차 (45s)', '2차 (100s)', '3차 (150s)', '4차 (150s)'],
+          datasets: [
+            {
+              label: 'Timeout 설정',
+              data: [45, 100, 150, 150],
+              backgroundColor: isDark ? 'rgba(245,158,11,0.25)' : 'rgba(217,119,6,0.2)',
+              borderColor: accentColor,
+              borderWidth: 2,
+              borderRadius: 4,
+              order: 2
+            },
+            {
+              label: '실제 대기 시간',
+              data: [75, 105, 157, 79],
+              backgroundColor: [
+                negativeColor + '44',
+                negativeColor + '44',
+                negativeColor + '44',
+                positiveColor + '44'
+              ],
+              borderColor: [negativeColor, negativeColor, negativeColor, positiveColor],
+              borderWidth: 2,
+              borderRadius: 4,
+              order: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          layout: { padding: { top: 10, right: 10, bottom: 10, left: 10 } },
+          plugins: {
+            tooltip: {
+              enabled: true,
+              mode: 'index',
+              intersect: false,
+              padding: 12,
+              cornerRadius: 8,
+              titleFont: { size: 14, family: 'Inter' },
+              bodyFont: { size: 13, family: 'Inter' },
+              callbacks: {
+                label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y + '초'; }
+              }
+            },
+            legend: {
+              position: 'top',
+              labels: {
+                color: textSecondary,
+                font: { family: 'Inter', size: 13 },
+                padding: 20,
+                usePointStyle: true,
+                pointStyleWidth: 12
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: textSecondary, font: { family: 'Inter', size: 13 } },
+              grid: { color: gridColor }
+            },
+            y: {
+              beginAtZero: true,
+              max: 180,
+              ticks: {
+                color: textSecondary,
+                font: { family: 'Inter', size: 13 },
+                callback: function(v) { return v + '초'; }
+              },
+              grid: { color: gridColor }
+            }
+          }
+        }
+      });
+
+      chartsBuilt = true;
+    }
+
+    function onThemeChange() {
+      chartsBuilt = false;
+      setTimeout(buildCharts, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', buildCharts);
+  </script>
+</body>
+</html>

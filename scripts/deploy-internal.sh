@@ -14,7 +14,7 @@ BRANCH="gh-pages"
 OUTPUT="_output"
 CONFIG="site/.eleventy.js"
 ELEVENTY="./site/node_modules/.bin/eleventy"
-PREFIX="/playbook/"
+PREFIX="/pages/byoungwoo-yoon/playbook/"
 
 echo "=== Internal Pages Deploy ==="
 

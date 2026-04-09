@@ -5,16 +5,16 @@ layout: layouts/base.njk
   <header class="post-header">
     <h1 class="post-title">{{ title }}</h1>
     <div class="post-meta">
-      {% if date %}<time>{{ date | dateFormat }}</time>{% endif %}
+      {%- if date %}<time>{{ date | dateFormat }}</time>{% endif %}
       <span class="post-category">{{ page.inputPath | category }}</span>
     </div>
-    {% if htmlPairs[page.filePathStem] %}
+    {%- if htmlPairs[page.filePathStem] %}
     <a href="{{ page.url }}interactive/" class="format-toggle format-toggle--html">
       HTML 버전 보기
     </a>
-    {% endif %}
+    {%- endif %}
   </header>
   <div class="post-content">
-    {{ content | safe }}
+{{ content | safe }}
   </div>
 </article>

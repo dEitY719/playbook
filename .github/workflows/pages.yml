@@ -30,7 +30,7 @@ jobs:
         run: cd site && npm ci
 
       - name: Build 11ty
-        run: npx eleventy --config=site/.eleventy.js
+        run: ./site/node_modules/.bin/eleventy --config=site/.eleventy.js
         env:
           ELEVENTY_PATH_PREFIX: /playbook/
 

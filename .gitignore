@@ -34,3 +34,6 @@ media/**/*.tmp.*
 # Backup
 *.backup
 *.bak
+
+# 11ty build output
+_output/

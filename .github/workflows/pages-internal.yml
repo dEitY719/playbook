@@ -1,0 +1,56 @@
+name: Deploy to Internal GitHub Pages
+
+# 사내 GitHub Enterprise용 워크플로우
+# self-hosted runner + Node.js로 11ty 빌드 후 Pages 배포
+#
+# 사전 조건:
+# 1. Settings → Pages → Source: "GitHub Actions"
+# 2. self-hosted runner에 Node.js 20+ 설치 필요
+#    (없으면 pages-internal-static.yml 사용)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: [self-hosted, AIA-RELEASE-DOCKER]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Node.js
+        run: node --version
+
+      - name: Install dependencies
+        run: cd site && npm ci
+
+      - name: Build 11ty
+        run: ./site/node_modules/.bin/eleventy --config=site/.eleventy.js
+        env:
+          ELEVENTY_PATH_PREFIX: /playbook/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _output
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: [self-hosted, AIA-RELEASE-DOCKER]
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

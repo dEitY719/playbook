@@ -15,7 +15,7 @@ module.exports = function (eleventyConfig) {
   for (const dir of ignoreDirs) {
     eleventyConfig.ignores.add(dir);
   }
-  // HTML 파일은 11ty가 처리하지 않음 (post-build에서 별도 처리)
+  // HTML 파일은 11ty 기본 처리에서 제외 (커스텀 확장자로 처리)
   eleventyConfig.ignores.add("docs/**/*.html");
 
   // --- 정적 자산 ---
@@ -47,10 +47,8 @@ module.exports = function (eleventyConfig) {
     return d.toISOString().split("T")[0];
   });
 
-  // --- Post-build: HTML 파일 복사 + 플로팅 버튼 주입 ---
-  eleventyConfig.on("eleventy.after", async ({ dir }) => {
-    const htmlFiles = glob.sync("docs/**/*.html");
-    const floatingBtn = `
+  // --- HTML 파일: 가상 템플릿으로 등록 (dev server 호환) ---
+  const floatingBtn = `
 <a href="../"
    style="position:fixed;bottom:20px;right:20px;background:#333;color:#fff;
           padding:8px 16px;border-radius:8px;text-decoration:none;
@@ -61,26 +59,25 @@ module.exports = function (eleventyConfig) {
   MD 버전 보기
 </a>`;
 
-    for (const htmlFile of htmlFiles) {
-      // docs/dev-learnings/slug.html → _output/dev-learnings/slug/interactive/index.html
-      const relative = htmlFile.replace(/^docs\//, "");
-      const withoutExt = relative.replace(/\.html$/, "");
-      const outPath = path.join(
-        dir.output,
-        withoutExt,
-        "interactive",
-        "index.html"
-      );
+  const htmlFiles = glob.sync("docs/**/*.html");
+  for (const htmlFile of htmlFiles) {
+    const relative = htmlFile.replace(/^docs\//, "");
+    const withoutExt = relative.replace(/\.html$/, "");
+    const permalink = `${withoutExt}/interactive/index.html`;
 
-      fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      let content = fs.readFileSync(htmlFile, "utf-8");
-      content = content.replace("</body>", floatingBtn + "\n</body>");
-      fs.writeFileSync(outPath, content, "utf-8");
-    }
-  });
+    let content = fs.readFileSync(htmlFile, "utf-8");
+    content = content.replace("</body>", floatingBtn + "\n</body>");
 
-  // --- pathPrefix: GitHub Pages 경로 ---
-  const pathPrefix = process.env.ELEVENTY_PATH_PREFIX || "/playbook/";
+    eleventyConfig.addTemplate(permalink, content, {
+      permalink: permalink,
+    });
+  }
+
+  // HTML 소스 변경 시 리빌드
+  eleventyConfig.addWatchTarget("docs/**/*.html");
+
+  // --- pathPrefix: GitHub Pages 경로 (로컬은 /, 배포 시 Actions에서 /playbook/ 설정) ---
+  const pathPrefix = process.env.ELEVENTY_PATH_PREFIX || "/";
 
   return {
     pathPrefix,

@@ -1,0 +1,58 @@
+---
+layout: layouts/base.njk
+title: Playbook
+permalink: /index.html
+---
+<section class="home">
+  <h1 class="home-heading">Playbook</h1>
+
+  {%- set allPosts = collections.posts -%}
+  {%- set categories = [] -%}
+  {%- for post in allPosts -%}
+    {%- set cat = post.data.category -%}
+    {%- if cat and cat not in categories -%}
+      {%- set categories = (categories.push(cat), categories) -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  <div class="category-tabs">
+    <button class="category-tab active" data-category="all">All</button>
+    {%- for cat in categories | sort -%}
+    <button class="category-tab" data-category="{{ cat }}">{{ cat }}</button>
+    {%- endfor -%}
+  </div>
+
+  <div class="card-list">
+    {%- for post in allPosts -%}
+    {%- set cat = post.data.category -%}
+    <div class="card" data-category="{{ cat }}">
+      <a href="{{ post.url | url }}" class="card-title-link">
+        <h2 class="card-title">{{ post.data.title }}</h2>
+      </a>
+      <div class="card-meta">
+        {% if post.data.date %}<time>{{ post.data.date | dateFormat }}</time> &middot;{% endif %}
+        <span>{{ cat }}</span>
+      </div>
+      <div class="card-links">
+        <a href="{{ post.url | url }}" class="card-link">MD</a>
+        {%- if htmlPairs[post.page.filePathStem] -%}
+        <a href="{{ post.url | url }}interactive/" class="card-link">HTML</a>
+        {%- endif -%}
+      </div>
+    </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+<script>
+document.querySelectorAll('.category-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.category-tab').forEach(function(t) { t.classList.remove('active'); });
+    this.classList.add('active');
+    var cat = this.dataset.category;
+    document.querySelectorAll('.card').forEach(function(card) {
+      card.style.display = (cat === 'all' || card.dataset.category === cat) ? '' : 'none';
+    });
+  });
+});
+</script>

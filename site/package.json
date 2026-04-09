@@ -1,0 +1,12 @@
+{
+  "name": "playbook-site",
+  "private": true,
+  "scripts": {
+    "build": "eleventy --config=site/.eleventy.js",
+    "serve": "eleventy --config=site/.eleventy.js --serve"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.0.0",
+    "fast-glob": "^3.3.0"
+  }
+}

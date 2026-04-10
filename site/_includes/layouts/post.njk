@@ -9,7 +9,7 @@ layout: layouts/base.njk
       <span class="post-category">{{ page.inputPath | category }}</span>
     </div>
     {%- for variant in htmlPairs[page.filePathStem] %}
-    <a href="{{ variant.url | url }}" class="format-toggle format-toggle--html">
+    <a href="{{ variant.url | url }}" class="format-toggle format-toggle--variant">
       {{ variant.label }} 버전 보기
     </a>
     {%- endfor %}

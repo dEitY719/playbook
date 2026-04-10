@@ -94,8 +94,8 @@ a:hover { text-decoration: underline; }
   padding: 0.4rem 1rem; border-radius: 2rem;
   font-size: 0.875rem; font-weight: 500;
 }
-.format-toggle--html { background: #fef3c7; color: #92400e; }
-.format-toggle--html:hover { background: #fde68a; text-decoration: none; }
+.format-toggle--variant { background: #fef3c7; color: #92400e; }
+.format-toggle--variant:hover { background: #fde68a; text-decoration: none; }
 
 /* === Post Content (rendered markdown) === */
 .post-content h1 { font-size: 1.5rem; margin-top: 2rem; }

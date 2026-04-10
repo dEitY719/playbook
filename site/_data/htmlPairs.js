@@ -1,4 +1,8 @@
 const glob = require("fast-glob");
+const { toPageStem, toPrettyStem } = require("../_lib/paths");
+
+const VARIANT_ORDER = ["HTML", "C", "CX", "G"];
+const VARIANT_SUFFIX_RE = /^(.+?)-(C|CX|G)$/;
 
 /**
  * 한 md 파일에 대응되는 HTML variant 목록 생성.
@@ -6,47 +10,43 @@ const glob = require("fast-glob");
  * 규칙:
  *   - `foo.html`                → baseKey `/foo`, label "HTML"
  *   - `foo-C.html` / `-CX` / `-G` → baseKey `/foo`, label "C"/"CX"/"G"
- *   - `index.html`              → baseKey `/index`,  url은 pretty URL로 정렬 (`/interactive/`)
+ *   - `index.html`              → baseKey `/index`, url은 pretty URL로 정렬
  *
- * baseKey 는 11ty `page.filePathStem` 과 매칭됨.
+ * baseKey 는 11ty `page.filePathStem` 과 매칭되어 템플릿에서
+ * `htmlPairs[post.page.filePathStem]` 으로 variant 리스트를 조회한다.
+ *
  * 반환 shape: { [baseKey]: [{ label, url }] }
  */
 module.exports = function () {
   const htmlFiles = glob.sync("docs/**/*.html");
   const pairs = {};
 
-  for (const f of htmlFiles) {
-    const rel = f.replace(/^docs\//, "").replace(/\.html$/, "");
-    const variantMatch = rel.match(/^(.+?)-(C|CX|G)$/);
+  for (const file of htmlFiles) {
+    const stem = toPageStem(file);
+    const variantMatch = stem.match(VARIANT_SUFFIX_RE);
 
     let baseKey;
     let label;
     let url;
 
     if (variantMatch) {
-      // variant HTML: 같은 디렉토리의 base md와 페어링
-      const base = variantMatch[1];
-      baseKey = "/" + base;
+      baseKey = "/" + variantMatch[1];
       label = variantMatch[2];
-      url = "/" + rel + "/interactive/";
+      url = "/" + stem + "/interactive/";
     } else {
-      // base HTML
-      baseKey = "/" + rel;
+      baseKey = "/" + stem;
       label = "HTML";
-      // index.html은 pretty URL로 경로 단축 (index.md 와 정렬)
-      const pretty = rel.replace(/(^|\/)index$/, "");
+      const pretty = toPrettyStem(stem);
       url = pretty ? "/" + pretty + "/interactive/" : "/interactive/";
     }
 
-    if (!pairs[baseKey]) pairs[baseKey] = [];
+    pairs[baseKey] ??= [];
     pairs[baseKey].push({ label, url });
   }
 
-  // 정렬: HTML → C → CX → G
-  const order = { HTML: 0, C: 1, CX: 2, G: 3 };
   for (const key of Object.keys(pairs)) {
     pairs[key].sort(
-      (a, b) => (order[a.label] ?? 99) - (order[b.label] ?? 99)
+      (a, b) => VARIANT_ORDER.indexOf(a.label) - VARIANT_ORDER.indexOf(b.label)
     );
   }
 

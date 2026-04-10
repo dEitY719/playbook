@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const glob = require("fast-glob");
+const { toPageStem, toPrettyStem } = require("./_lib/paths");
 
 module.exports = function (eleventyConfig) {
   // --- Ignores: 블로그가 아닌 디렉토리 ---
@@ -11,6 +12,8 @@ module.exports = function (eleventyConfig) {
     "docs/worklog-templates/**",
     "docs/superpowers/**",
     "docs/task-history/**",
+    // skills/*/SKILL_ko.md 는 README.md 와 쌍이므로 홈 카드 중복 방지를 위해 제외
+    "docs/skills/**/SKILL_ko.md",
   ];
   for (const dir of ignoreDirs) {
     eleventyConfig.ignores.add(dir);
@@ -61,9 +64,12 @@ module.exports = function (eleventyConfig) {
 
   const htmlFiles = glob.sync("docs/**/*.html");
   for (const htmlFile of htmlFiles) {
-    const relative = htmlFile.replace(/^docs\//, "");
-    const withoutExt = relative.replace(/\.html$/, "");
-    const permalink = `${withoutExt}/interactive/index.html`;
+    // index.html 은 `index.md` 의 pretty URL(`/foo/`) 과 짝이 되도록
+    // 경로 꼬리의 `/index` 를 떼서 같은 디렉토리에 착륙시킨다.
+    const prettyStem = toPrettyStem(toPageStem(htmlFile));
+    const permalink = prettyStem
+      ? `${prettyStem}/interactive/index.html`
+      : `interactive/index.html`;
 
     let content = fs.readFileSync(htmlFile, "utf-8");
     content = content.replace("</body>", floatingBtn + "\n</body>");

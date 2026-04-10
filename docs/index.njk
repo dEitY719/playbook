@@ -35,9 +35,9 @@ permalink: /index.html
       </div>
       <div class="card-links">
         <a href="{{ post.url | url }}" class="card-link">MD</a>
-        {%- if htmlPairs[post.page.filePathStem] -%}
-        <a href="{{ post.url | url }}interactive/" class="card-link">HTML</a>
-        {%- endif -%}
+        {%- for variant in htmlPairs[post.page.filePathStem] -%}
+        <a href="{{ variant.url | url }}" class="card-link">{{ variant.label }}</a>
+        {%- endfor -%}
       </div>
     </div>
     {%- endfor -%}

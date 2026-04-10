@@ -11,6 +11,8 @@ module.exports = function (eleventyConfig) {
     "docs/worklog-templates/**",
     "docs/superpowers/**",
     "docs/task-history/**",
+    // skills/*/SKILL_ko.md 는 README.md 와 쌍이므로 홈 카드 중복 방지를 위해 제외
+    "docs/skills/**/SKILL_ko.md",
   ];
   for (const dir of ignoreDirs) {
     eleventyConfig.ignores.add(dir);
@@ -63,7 +65,11 @@ module.exports = function (eleventyConfig) {
   for (const htmlFile of htmlFiles) {
     const relative = htmlFile.replace(/^docs\//, "");
     const withoutExt = relative.replace(/\.html$/, "");
-    const permalink = `${withoutExt}/interactive/index.html`;
+    // index.html → 부모 디렉토리(pretty URL)로 페어링 (index.md의 pretty URL과 정렬)
+    const stem = withoutExt.replace(/(^|\/)index$/, "");
+    const permalink = stem
+      ? `${stem}/interactive/index.html`
+      : `interactive/index.html`;
 
     let content = fs.readFileSync(htmlFile, "utf-8");
     content = content.replace("</body>", floatingBtn + "\n</body>");

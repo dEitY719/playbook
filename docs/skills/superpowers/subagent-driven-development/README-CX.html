@@ -120,8 +120,12 @@
       margin: 1.5rem auto 2.5rem;
       padding: 0 1rem;
       display: grid;
-      grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+      main { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); }
     }
 
     .panel {
@@ -145,7 +149,7 @@
     .toc-h3 { padding-left: 1rem; font-size: 0.86rem; }
     .toc-empty { color: var(--text-secondary); margin: 0; font-size: 0.92rem; }
 
-    .article { padding: 1.25rem 1.4rem; }
+    .article { padding: 1.25rem 1.4rem; min-width: 0; overflow-wrap: break-word; }
     .meta {
       display: inline-flex;
       align-items: center;
@@ -210,8 +214,7 @@
     .animate.delay-2 { animation-delay: 0.16s; }
     @keyframes rise { to { opacity: 1; transform: translateY(0); } }
 
-    @media (max-width: 900px) {
-      main { grid-template-columns: 1fr; }
+    @media (max-width: 1023px) {
       .toc { position: relative; top: 0; }
     }
 

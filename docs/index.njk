@@ -27,7 +27,7 @@ permalink: /index.html
     {%- set cat = post.data.category -%}
     <div class="card" data-category="{{ cat }}">
       <a href="{{ post.url | url }}" class="card-title-link">
-        <h2 class="card-title">{{ post.data.title }}</h2>
+        <h2 class="card-title">{{ post.data.cardTitle or post.data.title }}</h2>
       </a>
       <div class="card-meta">
         {%- if post.data.date %}<time>{{ post.data.date | dateFormat }}</time> &middot;{% endif %}

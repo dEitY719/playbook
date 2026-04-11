@@ -81,14 +81,6 @@ module.exports = function (eleventyConfig) {
   MD 버전 보기
 </a>`;
 
-  // 모든 텍스트 출력물의 줄 끝 공백을 제거해 배포용 commit 훅 차단을 예방한다.
-  const stripTrailingWhitespace = (text) => text.replace(/[ \t]+$/gm, "");
-
-  eleventyConfig.addTransform("strip-trailing-whitespace", function (content) {
-    if (typeof content !== "string") return content;
-    return stripTrailingWhitespace(content);
-  });
-
   const htmlFiles = glob.sync("docs/**/*.html");
   for (const htmlFile of htmlFiles) {
     const stem = toPageStem(htmlFile);
@@ -100,7 +92,6 @@ module.exports = function (eleventyConfig) {
       : `interactive/index.html`;
 
     let content = fs.readFileSync(htmlFile, "utf-8");
-    content = stripTrailingWhitespace(content);
     const mdHref = toMdHrefFromInteractive(stem);
     content = content.replace("</body>", buildFloatingBtn(mdHref) + "\n</body>");
 

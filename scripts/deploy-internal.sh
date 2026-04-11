@@ -20,8 +20,16 @@ echo "=== Internal Pages Deploy ==="
 
 sanitize_trailing_whitespace() {
   local target_dir="$1"
+  local -a sed_inplace_args
+  if sed --version >/dev/null 2>&1; then
+    # GNU sed
+    sed_inplace_args=(-i)
+  else
+    # BSD/macOS sed
+    sed_inplace_args=(-i "")
+  fi
   while IFS= read -r -d '' file; do
-    sed -i 's/[[:space:]]\+$//' "$file"
+    sed "${sed_inplace_args[@]}" -e 's/[[:space:]]\+$//' "$file"
   done < <(
     find "$target_dir" -type f \
       \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json' \

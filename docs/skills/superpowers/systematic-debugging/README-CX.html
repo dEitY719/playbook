@@ -115,7 +115,7 @@
     }
     .menu-actions button:hover { background: var(--surface-hover); transform: translateY(-1px); }
 
-    main {
+    #main-content {
       max-width: var(--max);
       margin: 1.5rem auto 2.5rem;
       padding: 0 1rem;
@@ -125,7 +125,7 @@
     }
 
     @media (min-width: 1024px) {
-      main { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); }
+      #main-content { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); }
     }
 
     .panel {
@@ -225,7 +225,7 @@
     @media print {
       .viz-menu, .toc { display: none !important; }
       body { background: #fff; }
-      main { display: block; max-width: 100%; margin: 0; padding: 0; }
+      #main-content { display: block; max-width: 100%; margin: 0; padding: 0; }
       .article { border: 0; box-shadow: none; }
     }
   </style>

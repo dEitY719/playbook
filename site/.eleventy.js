@@ -74,8 +74,14 @@ module.exports = function (eleventyConfig) {
     let content = fs.readFileSync(htmlFile, "utf-8");
     content = content.replace("</body>", floatingBtn + "\n</body>");
 
+    // layout: false — CX HTML 파일들은 자체 <!DOCTYPE html> 을 가진
+    // standalone 페이지라서 post.njk 로 감싸면 <main> 중첩이 생기고, CX 의
+    // 전역 `#main-content` (구 `main`) 셀렉터가 바깥 `<main class="site-main">`
+    // 까지 건드려 article 열이 붕괴한다. docs.11tydata.js 의 기본
+    // layout 상속을 여기서 해제한다.
     eleventyConfig.addTemplate(permalink, content, {
       permalink: permalink,
+      layout: false,
     });
   }
 

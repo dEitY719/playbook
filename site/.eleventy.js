@@ -1,7 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const glob = require("fast-glob");
-const { toPageStem, toPrettyStem } = require("./_lib/paths");
+const {
+  toPageStem,
+  toPrettyStem,
+  toMdHrefFromInteractive,
+} = require("./_lib/paths");
 
 module.exports = function (eleventyConfig) {
   // --- Ignores: 블로그가 아닌 디렉토리 ---
@@ -51,8 +55,11 @@ module.exports = function (eleventyConfig) {
   });
 
   // --- HTML 파일: 가상 템플릿으로 등록 (dev server 호환) ---
-  const floatingBtn = `
-<a href="../"
+  //
+  // `href` 는 파일마다 달라지므로 (예: `README-CX.html` → `../../README/`,
+  // `index-CX.html` → `../../`) 루프 안에서 계산한다.
+  const buildFloatingBtn = (href) => `
+<a href="${href}"
    style="position:fixed;bottom:20px;right:20px;background:#333;color:#fff;
           padding:8px 16px;border-radius:8px;text-decoration:none;
           font-size:14px;z-index:9999;opacity:0.85;
@@ -64,15 +71,17 @@ module.exports = function (eleventyConfig) {
 
   const htmlFiles = glob.sync("docs/**/*.html");
   for (const htmlFile of htmlFiles) {
+    const stem = toPageStem(htmlFile);
     // index.html 은 `index.md` 의 pretty URL(`/foo/`) 과 짝이 되도록
     // 경로 꼬리의 `/index` 를 떼서 같은 디렉토리에 착륙시킨다.
-    const prettyStem = toPrettyStem(toPageStem(htmlFile));
+    const prettyStem = toPrettyStem(stem);
     const permalink = prettyStem
       ? `${prettyStem}/interactive/index.html`
       : `interactive/index.html`;
 
     let content = fs.readFileSync(htmlFile, "utf-8");
-    content = content.replace("</body>", floatingBtn + "\n</body>");
+    const mdHref = toMdHrefFromInteractive(stem);
+    content = content.replace("</body>", buildFloatingBtn(mdHref) + "\n</body>");
 
     // layout: false — CX HTML 파일들은 자체 <!DOCTYPE html> 을 가진
     // standalone 페이지라서 post.njk 로 감싸면 <main> 중첩이 생기고, CX 의

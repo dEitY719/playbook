@@ -1,0 +1,8 @@
+exclude: ^(node_modules/|site/node_modules/|_output/|\.git/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer

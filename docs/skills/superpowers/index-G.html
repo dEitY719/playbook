@@ -115,7 +115,7 @@
     .flow-box ol { margin-left: 24px; margin-top: 16px; color: var(--text); }
     .flow-box li { margin-bottom: 12px; padding-left: 8px; }
     .flow-box li span { font-family: 'Fira Code', monospace; color: var(--accent-secondary); font-weight: 500; }
-    
+
     .info-box {
       display: flex; gap: 12px; align-items: flex-start;
       background: rgba(59, 130, 246, 0.1);
@@ -185,7 +185,7 @@
   </div>
 
   <main id="main-content" class="container">
-    
+
     <header class="reveal" data-reveal>
       <h1>Superpowers Plugin Skills</h1>
       <p class="subtitle">v5.0.7</p>
@@ -273,7 +273,7 @@
 
     <section class="reveal" data-reveal>
       <h2>Skill Usage Flow</h2>
-      
+
       <div class="flow-box">
         <h3>🚀 Feature Development (full lifecycle)</h3>
         <ol>
@@ -323,17 +323,17 @@
   </main>
 
   <script>
-    function toggleMenu() { 
+    function toggleMenu() {
       var dropdown = document.getElementById('vizMenuDropdown');
-      if (dropdown) dropdown.classList.toggle('open'); 
+      if (dropdown) dropdown.classList.toggle('open');
     }
-    document.addEventListener('click', e => { 
+    document.addEventListener('click', e => {
       if (!e.target.closest('.viz-menu')) {
         var dropdown = document.getElementById('vizMenuDropdown');
         if (dropdown) dropdown.classList.remove('open');
       }
     });
-    document.addEventListener('keydown', e => { 
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         var dropdown = document.getElementById('vizMenuDropdown');
         if (dropdown) dropdown.classList.remove('open');

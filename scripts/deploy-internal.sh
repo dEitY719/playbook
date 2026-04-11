@@ -18,6 +18,19 @@ PREFIX="/pages/byoungwoo-yoon/playbook/"
 
 echo "=== Internal Pages Deploy ==="
 
+sanitize_trailing_whitespace() {
+  local target_dir="$1"
+  while IFS= read -r -d '' file; do
+    sed -i 's/[[:space:]]\+$//' "$file"
+  done < <(
+    find "$target_dir" -type f \
+      \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json' \
+      -o -name '*.xml' -o -name '*.txt' -o -name '*.md' -o -name '*.svg' \
+      -o -name '*.yml' -o -name '*.yaml' -o -name '*.csv' \) \
+      -print0
+  )
+}
+
 # 1. 빌드
 echo "[1/4] Building site..."
 ELEVENTY_PATH_PREFIX="$PREFIX" "$ELEVENTY" --config="$CONFIG"
@@ -27,10 +40,10 @@ echo "[2/4] Preparing $BRANCH branch..."
 TMPDIR=$(mktemp -d)
 cp -r "$OUTPUT"/. "$TMPDIR"/
 touch "$TMPDIR/.nojekyll"
+sanitize_trailing_whitespace "$TMPDIR"
 
 cd "$TMPDIR"
-git init
-git checkout -b "$BRANCH"
+git init -b "$BRANCH"
 git add -A
 git commit -m "deploy: $(date +%Y-%m-%d\ %H:%M:%S)"
 

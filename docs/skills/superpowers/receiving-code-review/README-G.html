@@ -38,9 +38,9 @@
       transition: background 0.3s, color 0.3s;
       scrollbar-gutter: stable;
     }
-    h1,h2,h3,h4,h5,h6 { 
-      color: var(--text); 
-      letter-spacing: -0.03em; 
+    h1,h2,h3,h4,h5,h6 {
+      color: var(--text);
+      letter-spacing: -0.03em;
       line-height: 1.08;
       text-wrap: balance;
     }
@@ -186,12 +186,12 @@
   <a href="#main-content" class="skip-to-content">Skip to content</a>
 
   <main id="main-content" role="main">
-    
+
   <header class="animate" data-reveal style="margin-bottom: 2rem;">
     <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--accent);">receiving-code-review</h1>
     <p class="text-secondary" style="font-size: 1.25rem; font-weight: 500;">코드 리뷰 피드백을 방어적으로 처리하지 않고 정확히 반영/응답하는 스킬</p>
   </header>
-  
+
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
     <section class="card animate delay-1" data-reveal>
       <h2 style="font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">🚨 이 스킬이 해결하는 문제</h2>
@@ -252,17 +252,17 @@
   </main>
   <script>
     // === Menu ===
-    function toggleMenu() { 
+    function toggleMenu() {
       var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
-      if (dropdown) dropdown.classList.toggle('open'); 
+      if (dropdown) dropdown.classList.toggle('open');
     }
-    document.addEventListener('click', e => { 
+    document.addEventListener('click', e => {
       if (!e.target.closest('.viz-menu')) {
         var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
         if (dropdown) dropdown.classList.remove('open');
       }
     });
-    document.addEventListener('keydown', e => { 
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
         if (dropdown) dropdown.classList.remove('open');

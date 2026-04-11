@@ -29,10 +29,22 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "site/css": "css" });
 
   // --- 컬렉션: 모든 포스트 (날짜 역순) ---
+  //
+  // `docs/skills/<plugin>/<skill>/*.md` 깊이의 파일은 홈 카드 리스트에서 제외한다.
+  // `skills` 탭 밑에는 각 플러그인을 **한 장의 카드**로만 노출하고, 그 카드의
+  // 링크는 플러그인 레벨 페이지(`docs/skills/<plugin>/index.md`)로 연결된다.
+  // 향후 다른 플러그인들이 추가되어도 같은 패턴으로 동작한다.
+  const isNestedSkillPage = (inputPath) => {
+    const rel = inputPath.replace(/^\.?\/?/, "").replace(/^docs\//, "");
+    const parts = rel.split("/");
+    return parts[0] === "skills" && parts.length > 3;
+  };
+
   eleventyConfig.addCollection("posts", function (collectionApi) {
     return collectionApi
       .getFilteredByGlob("docs/**/*.md")
       .filter((item) => !item.inputPath.endsWith("index.njk"))
+      .filter((item) => !isNestedSkillPage(item.inputPath))
       .sort((a, b) => {
         const dateA = a.data.date || a.date;
         const dateB = b.data.date || b.date;

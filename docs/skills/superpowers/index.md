@@ -1,5 +1,6 @@
 ---
 title: "Superpowers Skills — Platform Comparison"
+cardTitle: "superpowers"
 date: 2026-04-10
 ---
 

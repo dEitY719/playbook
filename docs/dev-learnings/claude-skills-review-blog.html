@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Skills, 써보니까 이게 답이더라</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    /* ===== THEMES ===== */
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.08);
+      --text: #EDEDED; --text-secondary: #999;
+      --accent: #fb923c; --accent-secondary: #f472b6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --code-bg: #0F0F0F; --code-text: #E4E4E7;
+      --quote-bg: rgba(251,146,60,0.08);
+      --grid-line: rgba(255,255,255,0.03);
+    }
+    html.theme-light {
+      --bg: #FAF7F2; --surface: #FFFFFF; --surface-hover: #F5F1EA;
+      --border: rgba(20,20,20,0.08);
+      --text: #18181b; --text-secondary: #71717a;
+      --accent: #ea580c; --accent-secondary: #db2777;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+      --code-bg: #1E1B19; --code-text: #F5F1EA;
+      --quote-bg: rgba(234,88,12,0.06);
+      --grid-line: rgba(20,20,20,0.04);
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    h1,h2,h3,h4,h5,h6 {
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      text-wrap: balance;
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+    h1 { font-weight: 800; }
+    h2 { font-weight: 700; }
+    h3 { font-weight: 600; }
+    code, pre { font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace; }
+
+    /* ===== LAYOUT ===== */
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 48px 28px 96px; }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding: 72px 48px 56px;
+      border-radius: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 56px;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 85% 20%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 55%),
+        radial-gradient(circle at 15% 90%, color-mix(in oklab, var(--accent-secondary) 10%, transparent), transparent 55%);
+      pointer-events: none;
+    }
+    .hero-kicker {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 6px 14px;
+      background: color-mix(in oklab, var(--accent) 12%, transparent);
+      border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .hero-kicker .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.4); }
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .hero h1 .hl {
+      background: linear-gradient(120deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+    }
+    .hero-tagline {
+      font-size: 1.15rem; color: var(--text-secondary);
+      max-width: 720px; position: relative;
+      margin-bottom: 28px;
+    }
+    .hero-meta {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      font-size: 0.85rem; color: var(--text-secondary);
+      position: relative;
+    }
+    .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ===== SECTIONS ===== */
+    section { margin-bottom: 64px; scroll-margin-top: 80px; }
+    .section-num {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem; font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.25rem);
+      margin-bottom: 16px;
+    }
+    .section-lead {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      max-width: 800px;
+    }
+
+    /* ===== TL;DR PILLARS ===== */
+    .pillars {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .pillar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .pillar:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .pillar-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: grid; place-items: center;
+      background: color-mix(in oklab, var(--accent) 12%, transparent);
+      color: var(--accent); margin-bottom: 14px;
+      font-size: 1.3rem;
+    }
+    .pillar h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .pillar p { font-size: 0.92rem; color: var(--text-secondary); }
+
+    /* ===== EVOLUTION TABLE ===== */
+    .evo-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-top: 16px;
+    }
+    .evo {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      position: relative;
+    }
+    .evo.highlight {
+      border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+      background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 6%, var(--surface)), var(--surface));
+    }
+    .evo-stage {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .evo h3 { font-size: 1.3rem; margin-bottom: 6px; }
+    .evo .role { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 18px; }
+    .evo-cost {
+      padding-top: 16px; border-top: 1px dashed var(--border);
+      font-size: 0.88rem;
+    }
+    .evo-cost .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 4px;
+    }
+    .evo.highlight .evo-stage { color: var(--accent); }
+    .cost-bar {
+      height: 6px; border-radius: 3px; margin-top: 10px;
+      background: var(--surface-hover); overflow: hidden;
+      position: relative;
+    }
+    .cost-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+      transition: width 1.2s cubic-bezier(.2,.7,.2,1);
+    }
+
+    /* ===== CONTEXT RECEIPT ===== */
+    .receipt {
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: 16px; padding: 28px 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.92rem; line-height: 2;
+      position: relative;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    }
+    .receipt-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; padding-bottom: 12px;
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      font-size: 0.78rem;
+    }
+    .receipt-head .dots { display: flex; gap: 6px; }
+    .receipt-head .dots span {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+    }
+    .receipt-head .title { color: rgba(255,255,255,0.55); letter-spacing: 0.08em; }
+    .receipt-row { display: grid; grid-template-columns: 180px 80px 1fr; align-items: center; gap: 14px; padding: 3px 0; }
+    .receipt-row.hl { background: rgba(251,146,60,0.08); border-radius: 6px; padding: 6px 10px; margin: 4px -10px; }
+    .receipt-row .k { color: rgba(255,255,255,0.75); }
+    .receipt-row .v { color: #fb923c; font-weight: 500; text-align: right; }
+    .receipt-row .pct { color: rgba(255,255,255,0.5); font-size: 0.82rem; }
+    .receipt-row .note { color: rgba(255,255,255,0.38); font-size: 0.78rem; font-style: italic; }
+    .receipt-row.free .v { color: #10b981; }
+
+    /* ===== SKILL CARDS ===== */
+    .skill-stack {
+      display: grid; gap: 20px;
+    }
+    .skill {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 28px;
+      align-items: start;
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+    .skill:hover { border-color: color-mix(in oklab, var(--accent) 35%, var(--border)); transform: translateX(4px); }
+    .skill-badge {
+      width: 72px; height: 72px; border-radius: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      display: grid; place-items: center;
+      color: white; font-family: 'JetBrains Mono', monospace;
+      font-weight: 700; font-size: 1.1rem;
+      box-shadow: 0 8px 20px color-mix(in oklab, var(--accent) 30%, transparent);
+      position: relative;
+    }
+    .skill-body h3 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem; color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .skill-body .sub { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 16px; }
+    .cmp {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 18px;
+    }
+    .cmp-block {
+      background: var(--surface-hover); border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+    }
+    .cmp-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .cmp-block.before .cmp-label { color: var(--negative); }
+    .cmp-block.after .cmp-label { color: var(--positive); }
+    .cmp-block code {
+      font-size: 0.82rem; color: var(--text);
+      display: block; word-break: break-word;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .cmp-block.after code {
+      color: var(--accent); font-weight: 600;
+    }
+    .skill ul { list-style: none; padding: 0; }
+    .skill ul li {
+      padding: 6px 0 6px 22px; position: relative;
+      font-size: 0.94rem;
+    }
+    .skill ul li::before {
+      content: ''; position: absolute;
+      left: 0; top: 14px;
+      width: 10px; height: 2px; background: var(--accent);
+    }
+
+    /* ===== FAVORITE (visualize spotlight) ===== */
+    .fav {
+      background: linear-gradient(135deg,
+        color-mix(in oklab, var(--accent) 12%, var(--surface)),
+        color-mix(in oklab, var(--accent-secondary) 8%, var(--surface)));
+      border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--border));
+      border-radius: 20px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .fav::before {
+      content: '★'; position: absolute;
+      top: -20px; right: -10px;
+      font-size: 200px;
+      color: color-mix(in oklab, var(--accent) 8%, transparent);
+      font-family: serif;
+      line-height: 1;
+    }
+    .fav-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; position: relative; }
+    .fav-head .cmd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.4rem; font-weight: 700; color: var(--accent);
+    }
+    .fav-head .tag {
+      background: var(--accent); color: white;
+      font-size: 0.68rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 999px;
+      letter-spacing: 0.1em;
+    }
+    .fav ul { list-style: none; position: relative; }
+    .fav ul li {
+      padding: 10px 0 10px 28px; position: relative;
+      font-size: 1rem; color: var(--text);
+    }
+    .fav ul li::before {
+      content: '✦'; position: absolute; left: 0; top: 10px;
+      color: var(--accent); font-size: 1rem;
+    }
+    .fav .punch {
+      margin-top: 20px; padding: 16px 20px;
+      background: var(--surface); border-radius: 12px;
+      border-left: 3px solid var(--accent);
+      font-size: 0.95rem; color: var(--text);
+      position: relative;
+    }
+
+    /* ===== COMPARISON MATRIX ===== */
+    .matrix {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+    }
+    .matrix table { width: 100%; border-collapse: collapse; }
+    .matrix th, .matrix td {
+      padding: 16px 20px; text-align: left;
+      font-size: 0.93rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .matrix th {
+      background: var(--surface-hover);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .matrix th.skill-col { color: var(--accent); }
+    .matrix tr:last-child td { border-bottom: none; }
+    .matrix td.skill-col {
+      background: color-mix(in oklab, var(--accent) 6%, transparent);
+      font-weight: 600;
+    }
+    .matrix td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ===== INSTALL ===== */
+    .install {
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: 18px; padding: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .install .line {
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      margin: 8px 0;
+      font-size: 0.96rem;
+    }
+    .install .prompt { color: #fb923c; }
+    .install .cmd { color: #E4E4E7; flex: 1; }
+    .install .label { font-size: 0.72rem; color: rgba(255,255,255,0.45); }
+
+    /* ===== CHEATSHEET ===== */
+    .cheat {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+    }
+    .cheat table { width: 100%; border-collapse: collapse; }
+    .cheat th, .cheat td {
+      padding: 14px 18px; text-align: left;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .cheat th {
+      background: var(--surface-hover);
+      font-size: 0.78rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+    .cheat th.claude { color: var(--accent); }
+    .cheat tr:last-child td { border-bottom: none; }
+    .cheat td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; color: var(--accent);
+      font-size: 0.85rem;
+    }
+
+    /* ===== CALLOUT ===== */
+    .callout {
+      background: var(--quote-bg);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 18px 24px;
+      margin: 28px 0;
+      font-size: 0.98rem;
+      color: var(--text);
+    }
+    .callout strong { color: var(--accent); }
+
+    /* ===== FINALE ===== */
+    .finale {
+      text-align: center;
+      padding: 72px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-top: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .finale::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 60%);
+      pointer-events: none;
+    }
+    .finale h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .finale h2 .em {
+      background: linear-gradient(120deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .finale p { color: var(--text-secondary); max-width: 600px; margin: 0 auto 28px; position: relative; }
+    .finale .cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 26px; border-radius: 12px;
+      background: var(--accent); color: white;
+      font-weight: 600; text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+    .finale .cta:hover { transform: translateY(-2px); }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .animate.delay-4 { animation-delay: 0.4s; }
+    .animate.delay-5 { animation-delay: 0.5s; }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white !important; color: black !important; background-image: none !important; }
+      .viz-menu, .hero::before, .fav::before, .finale::before { display: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      section { break-inside: avoid; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 0.8in; }
+
+    /* ===== MENU ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    .skip-to-content {
+      position: absolute; top: -40px; left: 6px; background: var(--accent);
+      color: white; padding: 8px 12px; text-decoration: none;
+      border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000;
+    }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 760px) {
+      .wrap { padding: 28px 16px 72px; }
+      .hero { padding: 48px 24px 36px; border-radius: 18px; }
+      .evo-grid { grid-template-columns: 1fr; }
+      .skill { grid-template-columns: 1fr; gap: 16px; }
+      .skill-badge { width: 56px; height: 56px; font-size: 0.95rem; border-radius: 14px; }
+      .cmp { grid-template-columns: 1fr; }
+      .receipt { padding: 20px 18px; font-size: 0.82rem; }
+      .receipt-row { grid-template-columns: 100px 60px 1fr; gap: 8px; }
+      .receipt-row .note { display: none; }
+      .matrix table, .cheat table { font-size: 0.82rem; }
+      .matrix th, .matrix td, .cheat th, .cheat td { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">본문으로 건너뛰기</a>
+
+  <!-- MENU -->
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>Download PNG</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>Print / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content" role="main">
+  <div class="wrap">
+
+    <!-- HERO -->
+    <header class="hero animate">
+      <div class="hero-kicker"><span class="dot"></span> DEV LEARNINGS · CLAUDE CODE</div>
+      <h1>Claude Skills, <br>써보니까 <span class="hl">이게 답이더라</span></h1>
+      <p class="hero-tagline">
+        Skills는 <strong>토큰도 아끼고</strong>, 자연어로 매번 반복 지시하는 귀찮음도 없애주는
+        Claude 생산성 도구입니다. 써보면 영수증(<code>/context</code>)이 달라집니다.
+      </p>
+      <div class="hero-meta">
+        <span>🗓 2026.04.15</span>
+        <span>✍️ by deity719</span>
+        <span>⏱ 7 min read</span>
+        <span>🏷 claude · skills · productivity</span>
+      </div>
+    </header>
+
+    <!-- TL;DR -->
+    <section data-reveal>
+      <div class="section-num">TL;DR · 세 줄 요약</div>
+      <h2 class="section-title">핵심만 먼저</h2>
+      <div class="pillars">
+        <article class="pillar">
+          <div class="pillar-icon">🧬</div>
+          <h3>생태계 진화</h3>
+          <p>Anthropic은 <strong>MCP → Agent → Skill</strong> 순으로 진화 중.
+          토큰 효율은 Skill이 압도적.</p>
+        </article>
+        <article class="pillar">
+          <div class="pillar-icon">🎯</div>
+          <h3>반복의 영속화</h3>
+          <p>자연어로 매번 풀어쓰는 것보다 Skill로 박아두면
+          <strong>더 세밀·일관되고 팀과 공유 가능</strong>.</p>
+        </article>
+        <article class="pillar">
+          <div class="pillar-icon">⚡</div>
+          <h3>매일 쓰는 5선</h3>
+          <p><code>gh:issue → gh:commit → gh:pr → gh:pr-reply → visualize</code>.
+          GitHub 파이프라인 한 사이클 자동화.</p>
+        </article>
+      </div>
+
+      <div class="callout" style="margin-top:28px;">
+        💡 <strong>도구 중립 알림</strong> — 아래 예시는 <strong>Claude Code</strong> 기준이지만,
+        "재사용 가능한 작업 레시피"라는 Skill 개념은 <strong>AI CLI 공통</strong>입니다.
+        OpenCode는 <strong>Agent/Command</strong>, Roo Code는 <strong>Modes</strong>로 동일한 역할.
+        패턴은 그대로 이식 가능 — 매핑표는 섹션 5 참고.
+      </div>
+    </section>
+
+    <!-- WHY -->
+    <section data-reveal>
+      <div class="section-num">01 · WHY</div>
+      <h2 class="section-title">왜 Skill인가? — 한 마디로 "토큰"</h2>
+      <p class="section-lead">
+        처음 Skill을 써본 계기는 단순합니다. <strong>토큰을 아끼고 싶어서.</strong>
+        Anthropic 플랫폼의 진화를 따라가보면 의도가 명확합니다.
+      </p>
+
+      <div class="evo-grid">
+        <article class="evo">
+          <div class="evo-stage">STAGE 01</div>
+          <h3>MCP</h3>
+          <div class="role">Model Context Protocol — 외부 도구·데이터 연결</div>
+          <div class="evo-cost">
+            <div class="label">Context 비용</div>
+            스키마가 통째로 로드 — 도구가 많을수록 무거움
+            <div class="cost-bar"><div class="cost-bar-fill" style="width:78%"></div></div>
+          </div>
+        </article>
+        <article class="evo">
+          <div class="evo-stage">STAGE 02</div>
+          <h3>Agent</h3>
+          <div class="role">Sub-agents — 전문 역할 분리</div>
+          <div class="evo-cost">
+            <div class="label">Context 비용</div>
+            에이전트 목록·설명이 <strong>상주</strong> (있기만 해도 소모)
+            <div class="cost-bar"><div class="cost-bar-fill" style="width:60%"></div></div>
+          </div>
+        </article>
+        <article class="evo highlight">
+          <div class="evo-stage">★ STAGE 03 · WIN</div>
+          <h3>Skill</h3>
+          <div class="role">작업 레시피 — 온디맨드 로드</div>
+          <div class="evo-cost">
+            <div class="label">Context 비용</div>
+            이름+설명만 상주, 본문은 <strong>호출 순간에만</strong> 로드
+            <div class="cost-bar"><div class="cost-bar-fill" style="width:22%"></div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- RECEIPT -->
+    <section data-reveal>
+      <div class="section-num">01 · PROOF</div>
+      <h2 class="section-title">내 현재 세션 <code style="font-size:0.85em">/context</code> 실측</h2>
+      <p class="section-lead">
+        Skills 항목의 12.8k는 <strong>수백 개 스킬의 이름+설명 전체</strong>. 본문은 실제 호출할 때만 로드.
+        "상주형 Agent" vs "온디맨드형 Skill"의 구조적 차이가 곧 토큰 차이로 돌아옵니다.
+      </p>
+
+      <div class="receipt">
+        <div class="receipt-head">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="title">$ /context · live session</div>
+          <div style="color:rgba(255,255,255,0.4);">200k window</div>
+        </div>
+        <div class="receipt-row">
+          <span class="k">⛁ System prompt</span>
+          <span class="v">6.4k</span>
+          <span class="pct">3.2%</span>
+        </div>
+        <div class="receipt-row">
+          <span class="k">⛁ System tools</span>
+          <span class="v">7.0k</span>
+          <span class="pct">3.5%</span>
+        </div>
+        <div class="receipt-row">
+          <span class="k">⛁ Custom agents</span>
+          <span class="v">9.5k</span>
+          <span class="pct">4.7%</span>
+          <span class="note">← 있기만 해도 차지</span>
+        </div>
+        <div class="receipt-row">
+          <span class="k">⛁ Memory files</span>
+          <span class="v">1.3k</span>
+          <span class="pct">0.7%</span>
+        </div>
+        <div class="receipt-row hl">
+          <span class="k" style="color:#fb923c;">⛁ Skills</span>
+          <span class="v">12.8k</span>
+          <span class="pct">6.4%</span>
+          <span class="note" style="color:rgba(251,146,60,0.7);">← 메타만 상주, 본문은 온디맨드</span>
+        </div>
+        <div class="receipt-row">
+          <span class="k">⛁ Messages</span>
+          <span class="v">1.8k</span>
+          <span class="pct">0.9%</span>
+        </div>
+        <div class="receipt-row free">
+          <span class="k">⛶ Free space</span>
+          <span class="v">128.2k</span>
+          <span class="pct">64.1%</span>
+        </div>
+      </div>
+
+      <div class="callout">
+        직접 같은 작업을 <strong>자연어 → Agent → Skill</strong>로 바꿔가며 돌려봤는데,
+        <strong>Skill 경로가 가장 적게 먹습니다.</strong> 눈으로 확인 완료.
+      </div>
+    </section>
+
+    <!-- GITHUB PIPELINE -->
+    <section data-reveal>
+      <div class="section-num">02 · DAILY DRIVERS</div>
+      <h2 class="section-title">내가 매일 쓰는 스킬 — "GitHub 파이프라인 4단"</h2>
+      <p class="section-lead">
+        자연어로도 다 됩니다. 그런데 Skill로 박아두면 얻는 게 3가지: <strong>반복 입력 제로</strong> ·
+        <strong>품질 일관성</strong> · <strong>팀 공유</strong>. 아래 4개로 이슈 → 커밋 → PR → 리뷰 응대
+        <strong>한 사이클을 자동화</strong>합니다.
+      </p>
+
+      <div class="skill-stack">
+
+        <!-- SKILL 2.1 -->
+        <article class="skill">
+          <div class="skill-badge">01</div>
+          <div class="skill-body">
+            <h3>/gh:issue</h3>
+            <div class="sub">대화를 GitHub Issue로</div>
+            <div class="cmp">
+              <div class="cmp-block before">
+                <div class="cmp-label">✘ Before · 자연어</div>
+                <code>지금 너와 대화한 내용을 요약해서 현재 repository의 issue로 등록해. label은 enhancement로 설정.</code>
+              </div>
+              <div class="cmp-block after">
+                <div class="cmp-label">✔ After · Skill</div>
+                <code>/gh:issue</code>
+              </div>
+            </div>
+            <ul>
+              <li>현재 대화를 <strong>feature / bug / misc</strong>로 자동 분류해 구조화된 issue 본문 생성</li>
+              <li><code>gh issue create</code>로 바로 등록 — 확인 프롬프트 없음</li>
+              <li>issue는 PR·블로그에서 재활용되므로 <strong>과도하게 압축하지 않음</strong> (근거·결정 보존)</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- SKILL 2.2 -->
+        <article class="skill">
+          <div class="skill-badge">02</div>
+          <div class="skill-body">
+            <h3>/gh:commit</h3>
+            <div class="sub">이슈 자동 링크 커밋</div>
+            <div class="cmp">
+              <div class="cmp-block before">
+                <div class="cmp-label">✘ Before</div>
+                <code>지금 너와 작업한 내용을 커밋으로 만들어.</code>
+              </div>
+              <div class="cmp-block after">
+                <div class="cmp-label">✔ After</div>
+                <code>/gh:commit</code>
+              </div>
+            </div>
+            <ul>
+              <li><code>git status</code>/<code>diff</code>/<code>log</code>를 병렬로 읽어 <strong>repo의 기존 커밋 스타일을 그대로 따라감</strong></li>
+              <li>최근 대화나 인자에서 <code>#N</code>을 찾아 <code>Refs #N</code> / <code>Closes #N</code> 자동 footer 추가</li>
+              <li><strong>항상 새 커밋</strong> — amend 금지, hook 스킵 금지</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- SKILL 2.3 -->
+        <article class="skill">
+          <div class="skill-badge">03</div>
+          <div class="skill-body">
+            <h3>/gh:pr</h3>
+            <div class="sub">커밋 묶어 PR 생성</div>
+            <div class="cmp">
+              <div class="cmp-block before">
+                <div class="cmp-label">✘ Before</div>
+                <code>지금까지 작업한 커밋을 묶어서 PR 만들어. PR은 신규 브랜치에서 생성해.</code>
+              </div>
+              <div class="cmp-block after">
+                <div class="cmp-label">✔ After</div>
+                <code>/gh:pr</code>
+              </div>
+            </div>
+            <ul>
+              <li>base..HEAD 범위의 <strong>모든 커밋</strong>을 반영한 PR 본문 작성 (HEAD 하나만 보지 않음)</li>
+              <li>필요 시 자동 push, 관련 이슈가 있으면 자동 링크</li>
+              <li>결과는 PR URL 한 줄 — 바로 브라우저로</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- SKILL 2.4 -->
+        <article class="skill">
+          <div class="skill-badge">04</div>
+          <div class="skill-body">
+            <h3>/gh:pr-reply</h3>
+            <div class="sub">리뷰 코멘트 응대의 "예의"</div>
+            <div class="cmp">
+              <div class="cmp-block before">
+                <div class="cmp-label">✘ Before</div>
+                <code>동료가 PR#132에 리뷰를 달았어. 검토하고 타당하면 수용해. 리뷰 에티켓에 맞춰서 답글도 꼭 달아. 너는 답글 다는 것을 매번 놓치더라.</code>
+              </div>
+              <div class="cmp-block after">
+                <div class="cmp-label">✔ After</div>
+                <code>/gh:pr-reply</code>
+              </div>
+            </div>
+            <ul>
+              <li>모든 리뷰 코멘트 (<strong>봇 포함</strong> — gemini/sourcery/copilot)를 수집해 하나씩 판단</li>
+              <li><strong>수용</strong> 시 코드 수정까지, <strong>거절</strong> 시 이유를 명확히 답글 — "조용한 무시"는 없음</li>
+              <li>현재 브랜치 PR 자동 감지, <code>/gh:pr-reply 123</code>처럼 번호 지정도 가능</li>
+            </ul>
+            <div class="callout" style="margin-top:16px;margin-bottom:0;">
+              이 스킬은 <strong>"답글 다는 걸 매번 놓치더라"</strong>는 잔소리를 규칙으로 박아버린 사례.
+              자연어 지시의 휘발성을 Skill이 잡아주는 대표 예.
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- FAVORITE -->
+    <section data-reveal>
+      <div class="section-num">03 · FAVORITE</div>
+      <h2 class="section-title">요즘 최애 — <code style="font-size:0.7em">/visualize</code></h2>
+
+      <div class="fav">
+        <div class="fav-head">
+          <span class="cmd">/visualize some-doc.md</span>
+          <span class="tag">★ FAVORITE</span>
+        </div>
+        <ul>
+          <li>어떤 내용이든 <strong>단일 파일 HTML 시각화</strong> 생성 — 슬라이드 · 인포그래픽 · 대시보드 · 플로우차트 · 타임라인…</li>
+          <li>라이트·다크 테마, 유틸 메뉴 (PNG 다운로드 · 인쇄), 시맨틱 HTML 등 <strong>평가 기준을 기본 충족</strong></li>
+          <li>생성 즉시 <code>wslview</code>/<code>xdg-open</code>/<code>open</code>으로 <strong>자동 실행</strong>, <code>file://</code> URL까지 반환</li>
+        </ul>
+        <div class="punch">
+          <strong>왜 최애냐면</strong> — README, 회의 노트, 제품 아이디어가 들어오면
+          <em>5분 안에 공유 가능한 비주얼</em>이 나옵니다. 동료한테 "이거 봐봐" 링크 하나 던지면 설명 끝.
+          말보다 이미지가 빠르니까요. (참고로 지금 보고 계신 이 페이지도 <code>/visualize</code>로 뽑은 겁니다.)
+        </div>
+      </div>
+    </section>
+
+    <!-- MATRIX -->
+    <section data-reveal>
+      <div class="section-num">04 · CONCLUSION</div>
+      <h2 class="section-title">결론 — "반복을 자산으로"</h2>
+
+      <div class="matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>기준</th>
+              <th>자연어</th>
+              <th>Agent</th>
+              <th class="skill-col">★ Skill</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Context 소모</td>
+              <td>매 지시마다 누적</td>
+              <td>상주</td>
+              <td class="skill-col">메타만 상주, 본문 온디맨드</td>
+            </tr>
+            <tr>
+              <td>재현성</td>
+              <td>그때그때 다름</td>
+              <td>에이전트 프롬프트에 의존</td>
+              <td class="skill-col">SKILL.md = 단일 소스</td>
+            </tr>
+            <tr>
+              <td>팀 공유</td>
+              <td>위키·복붙</td>
+              <td>설정 파일 필요</td>
+              <td class="skill-col">git 체크인하면 끝</td>
+            </tr>
+            <tr>
+              <td>수정 난이도</td>
+              <td>기억과 싸움</td>
+              <td>에이전트 튜닝</td>
+              <td class="skill-col">md 파일 편집</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout" style="margin-top:28px;">
+        Skill의 본질은 <strong>"AI에게 내 업무 규칙을 영속화하는 것"</strong>입니다.
+        오늘 자연어로 세 번 이상 반복한 지시가 있다면 — 그건 이미 Skill 후보입니다.
+      </div>
+    </section>
+
+    <!-- INSTALL -->
+    <section data-reveal>
+      <div class="section-num">05 · TRY IT</div>
+      <h2 class="section-title">써보고 싶으시면 — 한 줄 설치</h2>
+      <p class="section-lead">
+        솔까, 내가 <strong>토큰 태워서</strong> 만든 스킬들이라 공유를 해야 하나 잠깐 고민했는데… 🤔
+        동료애(愛)가 넘쳐나서 그냥 풉니다. ㄲㄲ
+      </p>
+
+      <div class="install">
+        <div class="line">
+          <span class="prompt">$</span>
+          <span class="cmd">/plugin marketplace add dEitY719/claude-skills</span>
+          <span class="label">(한 번만)</span>
+        </div>
+        <div class="line">
+          <span class="prompt">$</span>
+          <span class="cmd">/plugin install visualize</span>
+          <span class="label">(개별 선택)</span>
+        </div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px dashed rgba(255,255,255,0.1);font-size:0.82rem;color:rgba(255,255,255,0.55);">
+          업데이트·제거도 같은 패턴:
+        </div>
+        <div class="line">
+          <span class="prompt">$</span>
+          <span class="cmd">/plugin update visualize</span>
+        </div>
+        <div class="line">
+          <span class="prompt">$</span>
+          <span class="cmd">/plugin uninstall visualize</span>
+        </div>
+      </div>
+
+      <p style="margin-top:20px;color:var(--text-secondary);">
+        전체 카탈로그는 👉
+        <a href="https://github.com/dEitY719/claude-skills" style="color:var(--accent);font-weight:600;text-decoration:none;border-bottom:1px solid currentColor;">
+          dEitY719/claude-skills
+        </a>
+      </p>
+      <p style="margin-top:8px;color:var(--text-secondary);font-size:0.95rem;">
+        <strong style="color:var(--text);">All-or-nothing 아닙니다.</strong> 필요한 것만 골라 쓰세요.
+        써보다 별로면 한 줄로 지우면 됩니다 — 심리적 허들 제로.
+      </p>
+    </section>
+
+    <!-- CHEATSHEET -->
+    <section data-reveal>
+      <div class="section-num">05 · BONUS</div>
+      <h2 class="section-title">📌 Claude를 못 쓰는 환경이라면 — 도구별 치트시트</h2>
+      <p class="section-lead">
+        회사에서 <strong>OpenCode / Roo Code</strong>만 허용되는 경우, "Skill이라는 개념"은 그대로 가져가고
+        <strong>이름표만 바꾸면</strong> 됩니다.
+      </p>
+
+      <div class="cheat">
+        <table>
+          <thead>
+            <tr>
+              <th class="claude">Claude Code (이 글 기준)</th>
+              <th>OpenCode</th>
+              <th>Roo Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Skill (<code>SKILL.md</code>)</td>
+              <td>Agent / Command (<code>.opencode/</code>)</td>
+              <td>Mode (<code>.roomodes</code> · Global Modes)</td>
+            </tr>
+            <tr>
+              <td>/gh:pr 같은 slash 호출</td>
+              <td><code>/agent &lt;name&gt;</code> · <code>/&lt;command&gt;</code></td>
+              <td>Mode 전환 후 목적에 맞게 프롬프트</td>
+            </tr>
+            <tr>
+              <td>마켓플레이스 (<code>/plugin</code>)</td>
+              <td>팀 레포에 <code>.opencode/</code> 체크인</td>
+              <td><code>.roomodes</code> git 공유 · Custom Modes</td>
+            </tr>
+            <tr>
+              <td>Context 소모 특성</td>
+              <td>Agent 메타 상주, 본문 호출 시 로드</td>
+              <td>Mode 정의 경량, 선택 시 system prompt 교체</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout" style="margin-top:24px;">
+        핵심 메시지는 동일합니다 — <strong>"자연어로 세 번 이상 반복한 지시는 파일로 영속화하라."</strong>
+        파일 위치와 호출 문법만 해당 도구의 규칙으로 맞추면 됩니다.
+      </div>
+    </section>
+
+    <!-- FINALE -->
+    <section class="finale" data-reveal>
+      <h2>다음에 만나면 <span class="em">/skill:creator</span><br>한 번 해보시죠.</h2>
+      <p>토큰 영수증이 다르게 나옵니다. 오늘의 반복이 내일의 자산이 됩니다.</p>
+      <a class="cta" href="https://github.com/dEitY719/claude-skills">
+        → dEitY719/claude-skills
+      </a>
+    </section>
+
+  </div>
+  </main>
+
+  <script>
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || 'light';
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, {
+          quality: 1, pixelRatio: 2,
+          filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); }
+        });
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'claude-skills-review-blog.png';
+        a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Skills, 써보니까 이게 답이더라</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.04);
+      --text: #EDEDED; --text-secondary: #888;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.06);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+    h1,h2,h3,h4 { color: var(--text); letter-spacing: -0.03em; line-height: 1.1; }
+    h1 { font-weight: 700; }
+    h2 { font-weight: 600; }
+    .text-secondary { color: var(--text-secondary); }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      transition: box-shadow 0.2s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .animate.delay-4 { animation-delay: 0.4s; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu, .reveal { display: revert; opacity: 1 !important; transform: none !important; }
+      .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #666; } }
+
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    .skip-to-content {
+      position: absolute; top: -40px; left: 6px; background: var(--accent);
+      color: white; padding: 8px 12px; text-decoration: none;
+      border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000;
+    }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+    .slide {
+      display: none;
+      min-height: 100vh;
+      padding: 60px 40px;
+      align-items: center;
+      justify-content: center;
+    }
+    .slide.active { display: flex; }
+    .slide-content {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .slide-nav {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 1000;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .slide-nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .slide-nav-dot.active {
+      background: var(--accent);
+      transform: scale(1.2);
+    }
+    .slide-nav-arrow {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .slide-nav-arrow:hover { background: var(--surface-hover); }
+
+    h1 { font-size: 3.5rem; margin-bottom: 16px; }
+    h2 { font-size: 2.25rem; margin-bottom: 12px; }
+    h3 { font-size: 1.5rem; margin-bottom: 8px; }
+    p { font-size: 1.125rem; margin-bottom: 12px; line-height: 1.7; }
+
+    .highlight {
+      background: var(--accent);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .skill-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .skill-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .skill-command {
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      background: var(--surface-hover);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      margin: 12px 0;
+      display: inline-block;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+    }
+    .comparison-table th,
+    .comparison-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-table th {
+      background: var(--surface-hover);
+      font-weight: 600;
+    }
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .metric-value {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 8px 0;
+    }
+    .metric-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-left: 24px;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 20px;
+      width: 2px;
+      height: calc(100% + 8px);
+      background: var(--border);
+    }
+    .timeline-item:last-child::after {
+      display: none;
+    }
+
+    .code-block {
+      background: var(--surface-hover);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-right: 8px;
+    }
+    .badge-accent {
+      background: var(--accent);
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>Download PNG</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>Print / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content">
+    <div class="slide active" id="slide-0">
+      <div class="slide-content">
+        <h1 class="animate">Claude Skills, 써보니까 이게 답이더라</h1>
+        <p class="text-secondary animate delay-1">토큰도 아끼고, 자연어로 매번 반복 지시하는 귀찮음도 없애주는<br/>Claude 생산성 도구</p>
+        <div class="animate delay-2" style="margin-top: 40px;">
+          <span class="badge badge-accent">🚀 생산성</span>
+          <span class="badge">📦 재사용성</span>
+          <span class="badge">👥 팀 공유</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-1" data-reveal>
+      <div class="slide-content">
+        <h2>왜 Skill인가?</h2>
+        <p>Anthropic 플랫폼 진화에 따른 토큰 효율성 향상</p>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>단계</th>
+              <th>역할</th>
+              <th>Context 비용</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MCP</strong></td>
+              <td>외부 도구/데이터 연결</td>
+              <td>스키마가 통째로 로드 — 도구가 많을수록 무거움</td>
+            </tr>
+            <tr>
+              <td><strong>Agent</strong></td>
+              <td>전문 역할 분리</td>
+              <td>에이전트 목록·설명이 <span class="highlight">상주</span></td>
+            </tr>
+            <tr>
+              <td><strong>Skill</strong></td>
+              <td>작업 레시피</td>
+              <td>이름+설명만 상주, 본문은 <span class="highlight">온디맨드</span> 로드</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 24px;">
+          <div class="metric-card">
+            <div class="metric-value" data-count="12.8" data-suffix="k">0k</div>
+            <div class="metric-label">토큰 (수백 개 스킬 이름+설명 전체)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-2" data-reveal>
+      <div class="slide-content">
+        <h2>토큰 실측 현황</h2>
+        <p>내 현재 세션 `/context` 분석</p>
+
+        <div style="background: var(--surface); padding: 24px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Menlo', monospace; line-height: 2;">
+          ⛁ System prompt:   6.4k  (3.2%)<br/>
+          ⛁ System tools:    7.0k  (3.5%)<br/>
+          ⛁ Custom agents:   9.5k  (4.7%)   ← 에이전트는 "있기만 해도" 차지<br/>
+          ⛁ Memory files:    1.3k  (0.7%)<br/>
+          ⛁ <strong style="color: var(--accent);">Skills:         12.8k  (6.4%)   ← 메타만 상주</strong><br/>
+          ⛁ Messages:        1.8k  (0.9%)<br/>
+          ⛶ Free space:    128.2k (64.1%)
+        </div>
+
+        <p style="margin-top: 24px; font-style: italic;" class="text-secondary">
+          💡 Skills 본문(수백 줄짜리 SKILL.md)은 호출 순간에만 로드됩니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-3" data-reveal>
+      <div class="slide-content">
+        <h2>매일 쓰는 스킬 5선</h2>
+        <p class="text-secondary">GitHub 파이프라인 4단 + 시각화</p>
+
+        <div class="skill-grid">
+          <div class="skill-item">
+            <h3>/gh:issue</h3>
+            <div class="skill-command">/gh:issue</div>
+            <p style="font-size: 0.9rem;">대화를 GitHub Issue로 자등록</p>
+          </div>
+          <div class="skill-item">
+            <h3>/gh:commit</h3>
+            <div class="skill-command">/gh:commit</div>
+            <p style="font-size: 0.9rem;">이슈 자동 링크 커밋</p>
+          </div>
+          <div class="skill-item">
+            <h3>/gh:pr</h3>
+            <div class="skill-command">/gh:pr</div>
+            <p style="font-size: 0.9rem;">커밋 묶어 PR 생성</p>
+          </div>
+          <div class="skill-item">
+            <h3>/gh:pr-reply</h3>
+            <div class="skill-command">/gh:pr-reply</div>
+            <p style="font-size: 0.9rem;">리뷰 코멘트 응대</p>
+          </div>
+          <div class="skill-item" style="border-color: var(--accent);">
+            <h3>/visualize</h3>
+            <div class="skill-command">/visualize</div>
+            <p style="font-size: 0.9rem;">HTML 시각화 생성</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-4" data-reveal>
+      <div class="slide-content">
+        <h2>Workflow: Issue → Commit → PR</h2>
+
+        <div class="timeline-item">
+          <div>
+            <strong>1. /gh:issue</strong>
+            <div class="code-block">
+지금 너와 대화한 내용을 요약해서
+현재 repository의 issue로 등록해.
+
+→ /gh:issue
+            </div>
+            <p class="text-secondary">feature / bug / misc 자동 분류 • gh issue create 바로 등록</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div>
+            <strong>2. /gh:commit</strong>
+            <div class="code-block">
+지금 너와 작업한 내용을 커밋으로 만들어.
+
+→ /gh:commit
+            </div>
+            <p class="text-secondary">repo 스타일 자동 학습 • #N 이슈 자동 링크 • amend 금지</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div>
+            <strong>3. /gh:pr</strong>
+            <div class="code-block">
+지금까지 작업한 커밋을 묶어서 PR 만들어.
+
+→ /gh:pr
+            </div>
+            <p class="text-secondary">모든 커밋 반영 • 자동 push • PR URL 반환</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div>
+            <strong>4. /gh:pr-reply</strong>
+            <div class="code-block">
+동료가 PR#132에 리뷰를 달았어.
+검토하고 타당하면 수용해.
+
+→ /gh:pr-reply
+            </div>
+            <p class="text-secondary">모든 코멘트 수용/거절 판단 • "조용한 무시" 방지</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-5" data-reveal>
+      <div class="slide-content">
+        <h2>최애 스킬: /visualize</h2>
+        <p>README, 회의 노트, 아이디어 → 5분 안에 공유 가능한 비주얼</p>
+
+        <div class="skill-grid">
+          <div class="skill-item">
+            <strong>📊 슬라이드 덱</strong>
+            <p class="text-secondary" style="font-size: 0.85rem;">프레젠테이션용 슬라이드</p>
+          </div>
+          <div class="skill-item">
+            <strong>📋 치트 시트</strong>
+            <p class="text-secondary" style="font-size: 0.85rem;">빠른 참고용 명령서</p>
+          </div>
+          <div class="skill-item">
+            <strong>🎨 포스터</strong>
+            <p class="text-secondary" style="font-size: 0.85rem;">고해상도 인포그래픽</p>
+          </div>
+          <div class="skill-item">
+            <strong>📈 대시보드</strong>
+            <p class="text-secondary" style="font-size: 0.85rem;">데이터 시각화</p>
+          </div>
+          <div class="skill-item">
+            <strong>🎯 피치 덱</strong>
+            <p class="text-secondary" style="font-size: 0.85rem;">투자자 프레젠테이션</p>
+          </div>
+          <div class="skill-item">
+            <strong>🔄 플로우차트</strong>
+            <p class="text-secondary" style="font-size: 0.85rem;">프로세스 다이어그램</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: var(--surface-hover); border-radius: 8px;">
+          <p style="margin: 0;"><strong>핵심:</strong> 라이트·다크 테마 • 유틸 메뉴(PNG 다운로드·인쇄) • 시맨틱 HTML • 자동 실행</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-6" data-reveal>
+      <div class="slide-content">
+        <h2>자연어 vs Agent vs Skill</h2>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>기준</th>
+              <th>자연어</th>
+              <th>Agent</th>
+              <th><strong>Skill</strong></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Context 소모</td>
+              <td>매 지시마다 누적</td>
+              <td>상주</td>
+              <td><span class="highlight">메타만 상주, 본문 온디맨드</span></td>
+            </tr>
+            <tr>
+              <td>재현성</td>
+              <td>그때그때 다름</td>
+              <td>에이전트 프롬프트에 의존</td>
+              <td><strong>SKILL.md = 단일 소스</strong></td>
+            </tr>
+            <tr>
+              <td>팀 공유</td>
+              <td>위키·복붙</td>
+              <td>설정 파일 필요</td>
+              <td><strong>git에 체크인하면 끝</strong></td>
+            </tr>
+            <tr>
+              <td>수정 난이도</td>
+              <td>기억과 싸움</td>
+              <td>에이전트 튜닝</td>
+              <td><strong>md 파일 편집</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 24px; padding: 20px; background: var(--surface); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;">
+          <strong>핵심 메시지:</strong> AI에게 내 업무 규칙을 영속화하라.<br/>
+          자연어로 세 번 이상 반복한 지시가 있다면 — 그건 이미 Skill 후보입니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-7" data-reveal>
+      <div class="slide-content">
+        <h2>도구 중립: 환경별 대응</h2>
+        <p class="text-secondary">Claude를 못 쓰는 환경에서도 패턴 그대로 적용</p>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>이 글의 용어</th>
+              <th>OpenCode</th>
+              <th>Roo Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Skill</strong> (SKILL.md)</td>
+              <td><strong>Agent</strong> / <strong>Command</strong> (.opencode/)</td>
+              <td><strong>Mode</strong> (.roomodes 또는 Global Modes)</td>
+            </tr>
+            <tr>
+              <td>/gh:pr 같은 슬래시 호출</td>
+              <td>/agent &lt;name&gt; · /&lt;command-name&gt;</td>
+              <td>Mode 전환 후 프롬프트</td>
+            </tr>
+            <tr>
+              <td>마켓플레이스</td>
+              <td>팀 레포에 .opencode/ 체크인</td>
+              <td>.roomodes 파일을 git 공유</td>
+            </tr>
+            <tr>
+              <td>Context 소모 특성</td>
+              <td>Agent 메타 상주, 본문은 호출 시 로드</td>
+              <td>Mode 정의는 경량, 선택 시 system prompt 교체</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 24px;">
+          <span class="badge badge-accent">자연어 → Skill</span>
+          <span class="badge">파일로 영속화</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-8" data-reveal>
+      <div class="slide-content">
+        <h2>설치 방법</h2>
+
+        <div style="margin-bottom: 24px;">
+          <p>Claude Code 세션 안에서 두 줄이면 끝:</p>
+          <div class="code-block">
+/plugin marketplace add dEitY719/claude-skills
+/plugin install visualize
+          </div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <p>필요한 스킬만 골라 설치:</p>
+          <div class="code-block">
+/plugin install gh:issue
+/plugin install gh:commit
+/plugin install gh:pr
+/plugin install gh:pr-reply
+          </div>
+        </div>
+
+        <div>
+          <p>업데이트 / 제거:</p>
+          <div class="code-block">
+/plugin update visualize
+/plugin uninstall visualize
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: var(--surface-hover); border-radius: 8px;">
+          <p style="margin: 0;">👉 <strong><a href="https://github.com/dEitY719/claude-skills" style="color: var(--accent);">전체 카탈로그 보기</a></strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-9" data-reveal>
+      <div class="slide-content">
+        <h2>바로 시작해보세요</h2>
+
+        <div class="card" style="margin: 24px 0; border-left: 4px solid var(--accent);">
+          <h3 style="margin-bottom: 12px;">다음에 만나면</h3>
+          <div class="skill-command">/skill:creator</div>
+          <p>토큰 영수증이 다르게 나옵니다.</p>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <p><strong>기억하세요:</strong></p>
+          <ul style="margin-left: 20px; line-height: 2;">
+            <li>자연어로 세 번 이상 반복한 지시 → 파일로 영속화</li>
+            <li>Skill = AI에게 내 업무 규칙을 박는 것</li>
+            <li>.git에 체크인하면 팀 공유 완료</li>
+          </ul>
+        </div>
+
+        <div style="margin-top: 40px; padding: 24px; background: var(--accent); color: white; border-radius: 12px; text-align: center;">
+          <h3 style="margin-bottom: 8px;">반복을 자산으로</h3>
+          <p style="margin: 0;">Claude Skills로 생산성을 높이세요!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-nav">
+      <button class="slide-nav-arrow" onclick="prevSlide()" aria-label="Previous slide">←</button>
+      <div id="slideDots"></div>
+      <button class="slide-nav-arrow" onclick="nextSlide()" aria-label="Next slide">→</button>
+    </div>
+  </main>
+
+  <script>
+    var currentSlide = 0;
+    var slides = document.querySelectorAll('.slide');
+    var totalSlides = slides.length;
+    var slideDots = document.getElementById('slideDots');
+
+    function init() {
+      for (var i = 0; i < totalSlides; i++) {
+        var dot = document.createElement('div');
+        dot.className = 'slide-nav-dot';
+        if (i === 0) dot.classList.add('active');
+        dot.onclick = (function(idx) { return function() { goToSlide(idx); }; })(i);
+        slideDots.appendChild(dot);
+      }
+      updateSlide();
+    }
+
+    function updateSlide() {
+      slides.forEach(function(slide, index) {
+        slide.classList.remove('active');
+        if (index === currentSlide) {
+          slide.classList.add('active');
+        }
+      });
+      var dots = document.querySelectorAll('.slide-nav-dot');
+      dots.forEach(function(dot, index) {
+        dot.classList.remove('active');
+        if (index === currentSlide) dot.classList.add('active');
+      });
+      localStorage.setItem('viz-current-slide', currentSlide);
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < totalSlides) {
+        currentSlide = index;
+        updateSlide();
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextSlide();
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(function(el) {
+        if (el.dataset.counted) return;
+        el.dataset.counted = '1';
+        var target = parseFloat(el.dataset.count), prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
+        var start = performance.now(), duration = 1200;
+        (function tick(now) {
+          var p = Math.min((now - start) / duration, 1), eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + (target * eased).toFixed(1).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        })(start);
+      });
+    }
+    var counterEl = document.querySelector('[data-count]');
+    if (counterEl) {
+      var cObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) { if (e.isIntersecting) { animateCounters(); cObs.disconnect(); } });
+      }, { threshold: 0.3 });
+      cObs.observe(counterEl);
+    }
+
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      var nav = document.querySelector('.slide-nav');
+      menu.style.display = 'none';
+      nav.style.display = 'none';
+      slides.forEach(function(slide) { slide.classList.add('active'); });
+      try {
+        var currentSlideEl = document.getElementById('slide-' + currentSlide);
+        var url = await htmlToImage.toPng(currentSlideEl, { quality: 1, pixelRatio: 2, filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'claude-skills-slide-' + (currentSlide + 1) + '.png';
+        a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+      nav.style.display = '';
+      slides.forEach(function(slide, index) {
+        if (index !== currentSlide) slide.classList.remove('active');
+      });
+    }
+
+    var savedSlide = localStorage.getItem('viz-current-slide');
+    if (savedSlide) {
+      currentSlide = parseInt(savedSlide);
+      if (isNaN(currentSlide) || currentSlide >= totalSlides) currentSlide = 0;
+    }
+    init();
+  </script>
+</body>
+</html>

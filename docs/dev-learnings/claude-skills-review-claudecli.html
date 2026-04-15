@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Skills, 써보니까 이게 답이더라</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.04);
+      --text: #EDEDED; --text-secondary: #888;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.06);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em; font-feature-settings: 'cv11', 'ss01';
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4,h5,h6 {
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+    h1 { font-weight: 800; }
+    h2 { font-weight: 700; }
+    h3 { font-weight: 600; }
+    body, p, li, td, th, span, label { font-weight: 400; }
+    p,li,td,th,span,label { color: var(--text); }
+    .text-secondary { color: var(--text-secondary); }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 0 0 1px var(--border), 0 8px 16px rgba(0,0,0,0.08);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .animate.delay-4 { animation-delay: 0.4s; }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu, .reveal { display: revert; opacity: 1 !important; transform: none !important; }
+      .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #666; } }
+
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    .skip-to-content {
+      position: absolute; top: -40px; left: 6px; background: var(--accent);
+      color: white; padding: 8px 12px; text-decoration: none;
+      border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000;
+    }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+    /* Article Styles */
+    .article-container {
+      max-width: 800px; margin: 0 auto; padding: 40px 24px;
+    }
+    .article-header {
+      padding: 60px 0 40px; border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .article-title {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      margin-bottom: 24px;
+    }
+    .article-subtitle {
+      font-size: 1.125rem; color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    .section {
+      margin-bottom: 60px;
+    }
+    .section-title {
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-number {
+      font-size: 0.875rem; color: var(--accent);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .tldr-box {
+      background: linear-gradient(135deg, var(--surface), var(--surface-hover));
+      border: 1px solid var(--border); border-left: 4px solid var(--accent);
+      padding: 24px; border-radius: 8px; margin: 32px 0;
+    }
+    .tldr-list {
+      list-style: none; display: flex; flex-direction: column; gap: 12px;
+    }
+    .tldr-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .tldr-bullet {
+      color: var(--accent); font-size: 1.5rem; line-height: 1.4;
+    }
+    .callout {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; margin: 32px 0;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .callout-icon { font-size: 1.5rem; }
+    .code-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; margin: 24px 0;
+      overflow-x: auto;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.875rem; line-height: 1.6;
+    }
+    .code-before { color: var(--negative); }
+    .code-after { color: var(--positive); }
+    .skill-flow {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px; margin: 32px 0;
+    }
+    .skill-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; text-align: center;
+      transition: all 0.2s; position: relative;
+    }
+    .skill-card:hover {
+      border-color: var(--accent); transform: translateY(-2px);
+    }
+    .skill-card .arrow {
+      position: absolute; right: -16px; top: 50%;
+      transform: translateY(-50%); color: var(--text-secondary);
+    }
+    .skill-name {
+      font-weight: 600; color: var(--accent);
+      font-family: monospace; font-size: 0.9rem;
+    }
+    .skill-desc {
+      font-size: 0.8rem; color: var(--text-secondary);
+      margin-top: 8px;
+    }
+    .comparison-table {
+      width: 100%; border-collapse: collapse;
+      margin: 32px 0;
+    }
+    .comparison-table th,
+    .comparison-table td {
+      padding: 16px; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-table th {
+      font-weight: 600; color: var(--text);
+      background: var(--surface);
+    }
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    .comparison-table .highlight {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    .context-meter {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 24px; margin: 32px 0;
+    }
+    .context-item {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .context-item:last-child { border-bottom: none; }
+    .context-label { font-size: 0.875rem; }
+    .context-size { font-family: monospace; font-size: 0.875rem; color: var(--accent); }
+    .context-percent { font-family: monospace; font-size: 0.875rem; color: var(--text-secondary); }
+
+    .tool-mapping-table {
+      width: 100%; border-collapse: collapse;
+      margin: 32px 0; font-size: 0.9rem;
+    }
+    .tool-mapping-table th,
+    .tool-mapping-table td {
+      padding: 14px 16px; text-align: left;
+      border: 1px solid var(--border);
+    }
+    .tool-mapping-table th {
+      font-weight: 600; background: var(--surface);
+    }
+
+    .tag {
+      display: inline-block; padding: 4px 10px;
+      border-radius: 100px; font-size: 0.75rem;
+      font-weight: 500; margin: 4px 4px 4px 0;
+    }
+    .tag-accent { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+    .tag-secondary { background: rgba(139, 92, 246, 0.15); color: var(--accent-secondary); }
+
+    @media (max-width: 640px) {
+      .skill-flow { grid-template-columns: 1fr; }
+      .skill-card .arrow { display: none; }
+      .comparison-table th,
+      .comparison-table td { padding: 12px; font-size: 0.85rem; }
+      .tool-mapping-table th,
+      .tool-mapping-table td { padding: 8px 10px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;padding:8px 16px;background:var(--accent);color:white;text-decoration:none;border-radius:4px;" onfocus="this.style.cssText='position:fixed;left:16px;top:16px;z-index:10000;padding:8px 16px;background:var(--accent);color:white;text-decoration:none;border-radius:4px;'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;'">Skip to content</a>
+
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>Download PNG</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>Print / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content">
+    <article class="article-container">
+      <header class="article-header animate">
+        <h1 class="article-title">Claude Skills,<br>써보니까 이게 답이더라</h1>
+        <p class="article-subtitle text-secondary">
+          Skills는 "토큰도 아끼고, 자연어로 매번 반복 지시하는 귀찮음도 없애주는" Claude 생산성 도구입니다. 써보면 영수증(/context)이 달라집니다.
+        </p>
+        <div style="margin-top: 24px;">
+          <span class="tag tag-accent">CLI</span>
+          <span class="tag tag-accent">Claude Code</span>
+          <span class="tag tag-secondary">생산성</span>
+          <span class="tag tag-secondary">GitHub</span>
+        </div>
+      </header>
+
+      <section class="section" data-reveal>
+        <h2 class="section-title"><span class="section-number">TL;DR</span></h2>
+        <div class="tldr-box card">
+          <ul class="tldr-list">
+            <li>
+              <span class="tldr-bullet">•</span>
+              <span>Anthropic 생태계는 <strong>MCP → Agent → Skill</strong> 순으로 진화 중. 토큰 효율 면에서 Skill이 압도적.</span>
+            </li>
+            <li>
+              <span class="tldr-bullet">•</span>
+              <span>같은 일을 자연어로 매번 풀어쓰는 것보다, Skill로 박아두면 <strong>더 세밀하고, 더 일관되고, 팀과 공유 가능</strong>.</span>
+            </li>
+            <li>
+              <span class="tldr-bullet">•</span>
+              <span>매일 쓰는 스킬 5선: <code style="background:var(--surface-hover);padding:2px 8px;border-radius:4px;font-family:monospace;color:var(--accent);">/gh:issue</code> → <code style="background:var(--surface-hover);padding:2px 8px;border-radius:4px;font-family:monospace;color:var(--accent);">/gh:commit</code> → <code style="background:var(--surface-hover);padding:2px 8px;border-radius:4px;font-family:monospace;color:var(--accent);">/gh:pr</code> → <code style="background:var(--surface-hover);padding:2px 8px;border-radius:4px;font-family:monospace;color:var(--accent);">/gh:pr-reply</code> → <code style="background:var(--surface-hover);padding:2px 8px;border-radius:4px;font-family:monospace;color:var(--accent);">/visualize</code>.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="callout card">
+          <span class="callout-icon">💡</span>
+          <div>
+            <strong>도구 중립 알림</strong> — 아래 예시는 제가 쓰는 <strong>Claude Code</strong> 기준이지만, "재사용 가능한 작업 레시피"라는 <strong>Skill 개념은 AI CLI 공통</strong>입니다. <strong>OpenCode 는 Agent/Command</strong>, <strong>Roo Code 는 Modes</strong> 로 동일한 역할을 합니다. 회사에서 Claude를 못 쓰더라도 <strong>패턴은 그대로 이식</strong> 가능 — 구체 매핑은 <a href="#tool-mapping" style="color:var(--accent);">섹션 5</a> 하단 표를 참고하세요.
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-reveal>
+        <h2 class="section-title"><span class="section-number">01</span>왜 Skill인가? — 한 마디로 "토큰"</h2>
+
+        <p style="margin-bottom: 20px;">처음 Skill을 써본 계기는 단순합니다. <strong>토큰을 아끼고 싶어서</strong>.</p>
+        <p style="margin-bottom: 32px;">Anthropic의 플랫폼 진화를 따라가보면 의도가 명확합니다.</p>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>단계</th>
+              <th>역할</th>
+              <th>Context 비용</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MCP</strong></td>
+              <td>외부 도구/데이터 연결</td>
+              <td class="text-secondary">스키마가 통째로 로드 — 도구가 많을수록 무거움</td>
+            </tr>
+            <tr>
+              <td><strong>Agent</strong></td>
+              <td>전문 역할 분리</td>
+              <td class="text-secondary">에이전트 목록·설명이 <strong>상주</strong> (있기만 해도 소모)</td>
+            </tr>
+            <tr class="highlight">
+              <td><strong>Skill</strong></td>
+              <td>작업 레시피</td>
+              <td><strong>이름+설명만 상주, 본문은 호출 순간에만 로드</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin: 32px 0 16px; font-size: 1.25rem;">내 현재 세션 <code style="color:var(--accent);">/context</code> 실측</h3>
+
+        <div class="context-meter card">
+          <div class="context-item">
+            <span class="context-label">System prompt</span>
+            <span class="context-size">6.4k</span>
+            <span class="context-percent">3.2%</span>
+          </div>
+          <div class="context-item">
+            <span class="context-label">System tools</span>
+            <span class="context-size">7.0k</span>
+            <span class="context-percent">3.5%</span>
+          </div>
+          <div class="context-item">
+            <span class="context-label">Custom agents</span>
+            <span class="context-size">9.5k</span>
+            <span class="context-percent">4.7%</span>
+          </div>
+          <div class="context-item">
+            <span class="context-label">Memory files</span>
+            <span class="context-size">1.3k</span>
+            <span class="context-percent">0.7%</span>
+          </div>
+          <div class="context-item" style="background: rgba(59, 130, 246, 0.1); border-radius: 4px; padding: 12px;">
+            <span class="context-label" style="font-weight: 600; color: var(--accent);">Skills ← 메타만 상주</span>
+            <span class="context-size" style="color: var(--accent);">12.8k</span>
+            <span class="context-percent">6.4%</span>
+          </div>
+          <div class="context-item">
+            <span class="context-label">Messages</span>
+            <span class="context-size">1.8k</span>
+            <span class="context-percent">0.9%</span>
+          </div>
+          <div class="context-item">
+            <span class="context-label text-secondary">Free space</span>
+            <span class="context-size text-secondary">128.2k</span>
+            <span class="context-percent text-secondary">64.1%</span>
+          </div>
+        </div>
+
+        <div class="callout card" style="margin-top: 24px;">
+          <span class="callout-icon">📊</span>
+          <div>
+            <strong>포인트</strong> — Skills 항목의 12.8k는 내가 설치한 <strong>수백 개 스킬의 이름+설명 전체</strong>입니다. 본문(수백 줄짜리 SKILL.md)은 <code style="color:var(--accent);">/gh:pr</code> 같이 실제로 호출할 때만 로드됩니다. "상주형 Agent" vs "온디맨드형 Skill" 의 구조적 차이가 곧 토큰 차이로 돌아옵니다.
+          </div>
+        </div>
+
+        <blockquote style="border-left: 3px solid var(--positive); padding-left: 16px; margin: 24px 0; color: var(--text-secondary); font-style: italic;">
+          직접 같은 작업을 자연어 → Agent → Skill 로 바꿔가며 돌려봤는데, <strong>Skill 경로가 가장 적게 먹습니다.</strong> 눈으로 확인 완료.
+        </blockquote>
+      </section>
+
+      <section class="section" data-reveal>
+        <h2 class="section-title"><span class="section-number">02</span>내가 매일 쓰는 스킬 — "GitHub 파이프라인 4단"</h2>
+
+        <p style="margin-bottom: 20px;">자연어로도 다 됩니다. 그런데 Skill로 박아두면 얻는 게 3가지입니다.</p>
+        <ul style="margin-bottom: 32px; padding-left: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <li><strong>반복 입력 제로</strong> — <code style="color:var(--accent);">/gh:pr</code> 네 글자로 끝</li>
+          <li><strong>품질 일관성</strong> — 매번 같은 체크리스트로 실행</li>
+          <li><strong>팀 공유</strong> — git에 체크인하면 동료도 즉시 사용</li>
+        </ul>
+        <p style="margin-bottom: 24px;">아래 4개는 이슈 등록 → 커밋 → PR → 리뷰 응대까지 <strong>한 사이클을 자동화</strong>합니다.</p>
+
+        <div class="skill-flow">
+          <div class="skill-card">
+            <span class="arrow">→</span>
+            <div class="skill-name">/gh:issue</div>
+            <div class="skill-desc">대화를 Issue로</div>
+          </div>
+          <div class="skill-card">
+            <span class="arrow">→</span>
+            <div class="skill-name">/gh:commit</div>
+            <div class="skill-desc">이슈 링크 커밋</div>
+          </div>
+          <div class="skill-card">
+            <span class="arrow">→</span>
+            <div class="skill-name">/gh:pr</div>
+            <div class="skill-desc">커밋 묶어 PR</div>
+          </div>
+          <div class="skill-card">
+            <div class="skill-name">/gh:pr-reply</div>
+            <div class="skill-desc">리뷰 응대</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-reveal>
+        <h3 style="margin-bottom: 16px; font-size: 1.5rem;">2.1 <code style="color:var(--accent);">/gh:issue</code> — 대화를 GitHub Issue로</h3>
+
+        <div class="code-block">
+          <div class="code-before"># Before (자연어)</div>
+          <div>지금 너와 대화한 내용을 요약해서 현재 repository의 issue로 등록해. label은 enhancement 로 설정.</div>
+          <br>
+          <div class="code-after"># After</div>
+          <div>/gh:issue</div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <strong>핵심 3줄</strong>
+        </div>
+        <ul style="margin-top: 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li>현재 대화를 <strong>feature / bug / misc</strong> 로 자동 분류해 구조화된 issue 본문 생성</li>
+          <li><code style="color:var(--accent);">gh issue create</code> 로 바로 등록 — 확인 프롬프트 없음</li>
+          <li>issue는 PR 초안·블로그에서 재활용되므로 <strong>과도하게 압축하지 않음</strong> (근거·결정 보존)</li>
+        </ul>
+      </section>
+
+      <section class="section" data-reveal>
+        <h3 style="margin-bottom: 16px; font-size: 1.5rem;">2.2 <code style="color:var(--accent);">/gh:commit</code> — 이슈 자동 링크 커밋</h3>
+
+        <div class="code-block">
+          <div class="code-before"># Before</div>
+          <div>지금 너와 작업한 내용을 커밋으로 만들어.</div>
+          <br>
+          <div class="code-after"># After</div>
+          <div>/gh:commit</div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <strong>핵심 3줄</strong>
+        </div>
+        <ul style="margin-top: 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li><code style="color:var(--accent);">git status</code>/<code style="color:var(--accent);">diff</code>/<code style="color:var(--accent);">log</code> 를 병렬로 읽어 <strong>repo의 기존 커밋 스타일을 그대로 따라감</strong></li>
+          <li>최근 대화나 인자에서 <code style="color:var(--accent);">#N</code> 을 찾아 <code style="color:var(--accent);">Refs #N</code> / <code style="color:var(--accent);">Closes #N</code> 자동 footer 추가</li>
+          <li><strong>항상 새 커밋</strong> — amend 금지, hook 스킵 금지</li>
+        </ul>
+      </section>
+
+      <section class="section" data-reveal>
+        <h3 style="margin-bottom: 16px; font-size: 1.5rem;">2.3 <code style="color:var(--accent);">/gh:pr</code> — 커밋 묶어 PR 생성</h3>
+
+        <div class="code-block">
+          <div class="code-before"># Before</div>
+          <div>지금까지 작업한 커밋을 묶어서 PR 만들어. PR은 신규 브랜치에서 생성해.</div>
+          <br>
+          <div class="code-after"># After</div>
+          <div>/gh:pr</div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <strong>핵심 3줄</strong>
+        </div>
+        <ul style="margin-top: 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li>base..HEAD 범위의 <strong>모든 커밋</strong>을 반영한 PR 본문 작성 (HEAD 하나만 보지 않음)</li>
+          <li>필요 시 자동 push, 관련 이슈가 있으면 자동 링크</li>
+          <li>결과는 PR URL 한 줄 — 바로 브라우저로</li>
+        </ul>
+      </section>
+
+      <section class="section" data-reveal>
+        <h3 style="margin-bottom: 16px; font-size: 1.5rem;">2.4 <code style="color:var(--accent);">/gh:pr-reply</code> — 리뷰 코멘트 응대의 "예의"</h3>
+
+        <div class="code-block">
+          <div class="code-before"># Before</div>
+          <div>동료가 PR#132에 리뷰를 달았어. 검토하고 타당하면 수용해.<br>리뷰 에티켓에 맞춰서 답글도 꼭 달아. 너는 답글 다는 것을 매번 놓치더라.</div>
+          <br>
+          <div class="code-after"># After</div>
+          <div>/gh:pr-reply</div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <strong>핵심 3줄</strong>
+        </div>
+        <ul style="margin-top: 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li>모든 리뷰 코멘트(<strong>봇 포함</strong> — gemini/sourcery/copilot)를 수집해 하나씩 판단</li>
+          <li><strong>수용</strong> 시 코드 수정까지, <strong>거절</strong> 시 이유를 명확히 답글 — "조용한 무시"는 없음</li>
+          <li>현재 브랜치 PR 자동 감지, <code style="color:var(--accent);">/gh:pr-reply 123</code> 처럼 번호 지정도 가능</li>
+        </ul>
+
+        <div class="callout card" style="margin-top: 24px;">
+          <span class="callout-icon">✓</span>
+          <div>
+            이 스킬은 내가 반복했던 <strong>"답글 다는 걸 매번 놓치더라"</strong> 는 잔소리를 규칙으로 박아버린 사례입니다. 자연어 지시의 휘발성을 Skill이 잡아주는 대표 예.
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-reveal>
+        <h2 class="section-title"><span class="section-number">03</span>요즘 최애 — <code style="color:var(--accent);">/visualize</code></h2>
+
+        <div class="code-block">
+          <div>/visualize some-doc.md</div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <strong>핵심 3줄</strong>
+        </div>
+        <ul style="margin-top: 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li>어떤 내용이든 <strong>단일 파일 HTML 시각화</strong> 생성 — 슬라이드/인포그래픽/대시보드/플로우차트/타임라인…</li>
+          <li>라이트·다크 테마, 유틸 메뉴(PNG 다운로드·인쇄), 시맨틱 HTML 등 <strong>평가 기준을 기본 충족</strong></li>
+          <li>생성 즉시 <code style="color:var(--accent);">wslview</code>/<code style="color:var(--accent);">xdg-open</code>/<code style="color:var(--accent);">open</code> 으로 <strong>자동 실행</strong>, <code style="color:var(--accent);">file://</code> URL까지 반환</li>
+        </ul>
+
+        <div class="callout card" style="margin-top: 24px;">
+          <span class="callout-icon">🎨</span>
+          <div>
+            <strong>왜 최애냐면</strong> — README, 회의 노트, 제품 아이디어가 들어오면 <em>5분 안에 공유 가능한 비주얼</em>이 나옵니다. 동료한테 "이거 봐봐" 링크 하나 던지면 설명 끝. 말보다 이미지가 빠르니까요.
+          </div>
+        </div>
+
+        <p style="margin-top: 24px; font-size: 0.875rem; color: var(--text-secondary);">
+          예시는 직접 보세요: <code style="color:var(--accent);">claude/skills/visualize/examples/</code> (carousel, cheatsheet, poster, dashboard, pitch-deck 등 18종)
+        </p>
+      </section>
+
+      <section class="section" data-reveal>
+        <h2 class="section-title"><span class="section-number">04</span>결론 — "반복을 자산으로"</h2>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>기준</th>
+              <th>자연어</th>
+              <th>Agent</th>
+              <th><strong>Skill</strong></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Context 소모</td>
+              <td>매 지시마다 누적</td>
+              <td>상주</td>
+              <td class="highlight"><strong>메타만 상주, 본문 온디맨드</strong></td>
+            </tr>
+            <tr>
+              <td>재현성</td>
+              <td>그때그때 다름</td>
+              <td>에이전트 프롬프트에 의존</td>
+              <td class="highlight"><strong><code style="font-size: 0.85rem;">SKILL.md</code> = 단일 소스</strong></td>
+            </tr>
+            <tr>
+              <td>팀 공유</td>
+              <td>위키·복붙</td>
+              <td>설정 파일 필요</td>
+              <td class="highlight"><strong>git에 체크인하면 끝</strong></td>
+            </tr>
+            <tr>
+              <td>수정 난이도</td>
+              <td>기억과 싸움</td>
+              <td>에이전트 튜닝</td>
+              <td class="highlight"><strong><code style="font-size: 0.85rem;">md</code> 파일 편집</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout card" style="margin-top: 32px; border-color: var(--accent);">
+          <div style="flex: 1;">
+            <p style="font-size: 1.125rem; margin-bottom: 12px;"><strong>Skill의 본질</strong></p>
+            <p>"<strong>AI에게 내 업무 규칙을 영속화하는 것</strong>" 입니다.</p>
+            <p style="margin-top: 16px; font-style: italic; color: var(--text-secondary);">
+              오늘 자연어로 세 번 이상 반복한 지시가 있다면 — 그건 이미 Skill 후보입니다.<br>
+              다음에 만나면 <code style="color:var(--accent);">/skill:creator</code> 한 번 해보시죠. 토큰 영수증이 다르게 나옵니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-reveal>
+        <h2 class="section-title"><span class="section-number">05</span>써보고 싶으시면 — 한 줄 설치</h2>
+
+        <div class="callout card" style="margin: 24px 0;">
+          <span class="callout-icon">😊</span>
+          <div>
+            솔까, 내가 <strong>토큰 태워서</strong> 만든 스킬들이라 공유를 해야 하나 잠깐 고민했는데…<br>
+            동료愛(애)가 넘쳐나서 그냥 풉니다. ㄲㄲ
+          </div>
+        </div>
+
+        <p style="margin-bottom: 16px;">설치는 Claude Code 세션 안에서 두 줄이면 끝납니다.</p>
+
+        <div class="code-block">
+          <div>/plugin marketplace add dEitY719/claude-skills</div>
+          <div>/plugin install visualize</div>
+        </div>
+
+        <ul style="margin: 24px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li>첫 줄 — 제가 운영하는 <strong>마켓플레이스</strong>를 등록 (한 번만)</li>
+          <li>둘째 줄 — 원하는 스킬 설치 (<code style="color:var(--accent);">visualize</code>, <code style="color:var(--accent);">gh:issue</code>, <code style="color:var(--accent);">gh:pr</code> 등 개별 선택)</li>
+        </ul>
+
+        <p style="margin-bottom: 16px;">업데이트/제거도 같은 패턴:</p>
+
+        <div class="code-block">
+          <div>/plugin update visualize</div>
+          <div>/plugin uninstall visualize</div>
+        </div>
+
+        <p style="margin: 24px 0 16px;">전체 카탈로그와 추가되는 스킬 목록은 여기서 확인:</p>
+        <p>👉 <a href="https://github.com/dEitY719/claude-skills" style="color: var(--accent);" target="_blank">dEitY719/claude-skills README</a></p>
+
+        <p style="margin-top: 24px; padding: 16px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border);">
+          <strong>All-or-nothing 아닙니다.</strong> 필요한 것만 골라 쓰세요. 써보다 별로면 한 줄로 지우면 됩니다 — 심리적 허들 제로.
+        </p>
+
+        <h3 id="tool-mapping" style="margin: 40px 0 20px; font-size: 1.25rem;">📌 Claude를 못 쓰는 환경이라면 — 도구별 대응 치트시트</h3>
+
+        <p style="margin-bottom: 16px;">회사에서 <strong>OpenCode / Roo Code</strong> 만 허용되는 경우, 이 글의 "Skill 이라는 개념"은 그대로 가져가고 <strong>이름표만 바꾸면</strong> 됩니다.</p>
+
+        <table class="tool-mapping-table">
+          <thead>
+            <tr>
+              <th>이 글의 용어 (Claude Code)</th>
+              <th>OpenCode</th>
+              <th>Roo Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Skill</strong> (<code style="font-size: 0.85rem;">SKILL.md</code>)</td>
+              <td><strong>Agent</strong> / <strong>Command</strong> (<code style="font-size: 0.8rem;">.opencode/</code>)</td>
+              <td><strong>Mode</strong> (<code style="font-size: 0.8rem;">.roomodes</code> 또는 Global Modes)</td>
+            </tr>
+            <tr>
+              <td><code style="font-size: 0.85rem;">/gh:pr</code> 같은 slash 호출</td>
+              <td><code style="font-size: 0.85rem;">/agent &lt;name&gt;</code> · <code style="font-size: 0.85rem;">/&lt;command-name&gt;</code></td>
+              <td>Mode 전환 후 해당 목적에 맞게 프롬프트</td>
+            </tr>
+            <tr>
+              <td>마켓플레이스 (<code style="font-size: 0.85rem;">/plugin</code>)</td>
+              <td>팀 레포에 <code style="font-size: 0.8rem;">.opencode/</code> 체크인</td>
+              <td><code style="font-size: 0.8rem;">.roomodes</code> 파일을 git 공유 / Custom Modes</td>
+            </tr>
+            <tr>
+              <td>Context 소모 특성</td>
+              <td>Agent 메타 상주, 본문은 호출 시 로드</td>
+              <td>Mode 정의는 경량, 선택 시 system prompt 교체</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout card" style="margin-top: 24px; border-color: var(--accent-secondary);">
+          <span class="callout-icon">🔄</span>
+          <div>
+            <strong>핵심 메시지는 동일합니다</strong> — <strong>"자연어로 세 번 이상 반복한 지시는 파일로 영속화하라."</strong> 파일 위치와 호출 문법만 해당 도구의 규칙으로 맞추면 됩니다.
+          </div>
+        </div>
+      </section>
+
+      <footer style="margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 0.875rem; text-align: center;">
+        <p>Published with <code style="color:var(--accent);">/visualize</code> skill</p>
+        <p style="margin-top: 8px;">
+          <a href="https://github.com/dEitY719/claude-skills" style="color: var(--text-secondary);">dEitY719/claude-skills</a>
+        </p>
+      </footer>
+    </article>
+  </main>
+
+  <script>
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('reveal'));
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2, filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a'); a.href = url;
+        a.download = document.title.replace(/\s+/g, '-').toLowerCase() + '.png'; a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+  </script>
+</body>
+</html>

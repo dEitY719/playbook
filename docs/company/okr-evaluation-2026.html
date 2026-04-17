@@ -238,7 +238,7 @@
 
   <!-- MENU -->
   <div class="viz-menu">
-    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="vizMenuDropdown">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
       </svg>
@@ -449,27 +449,35 @@
   </main>
 
   <script>
+    function syncMenuAria(isOpen) {
+      var toggleButton = document.querySelector('.viz-menu-toggle');
+      if (toggleButton) toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
     function toggleMenu() {
       var dropdown = document.getElementById('vizMenuDropdown');
-      if (dropdown) dropdown.classList.toggle('open');
+      if (!dropdown) return;
+      dropdown.classList.toggle('open');
+      syncMenuAria(dropdown.classList.contains('open'));
+    }
+    function closeMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (!dropdown) return;
+      dropdown.classList.remove('open');
+      syncMenuAria(false);
     }
     document.addEventListener('click', function(e) {
-      if (!e.target.closest('.viz-menu')) {
-        var dropdown = document.getElementById('vizMenuDropdown');
-        if (dropdown) dropdown.classList.remove('open');
-      }
+      if (!e.target.closest('.viz-menu')) closeMenu();
     });
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        var dropdown = document.getElementById('vizMenuDropdown');
-        if (dropdown) dropdown.classList.remove('open');
-      }
+      if (e.key === 'Escape') closeMenu();
     });
 
     var savedTheme = localStorage.getItem('viz-theme');
     var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     function applyTheme(t) {
-      document.documentElement.className = 'theme-' + t;
+      var root = document.documentElement;
+      root.classList.remove('theme-dark', 'theme-light');
+      root.classList.add('theme-' + t);
       document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
       document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
       localStorage.setItem('viz-theme', t);

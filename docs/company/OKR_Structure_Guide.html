@@ -520,7 +520,8 @@
     /* ===== PRINT ===== */
     @media print {
       body { background: white !important; color: black !important; }
-      .viz-menu, .hero { display: revert; opacity: 1 !important; transform: none !important; }
+      .viz-menu { display: none !important; }
+      .hero { display: revert; opacity: 1 !important; transform: none !important; }
       .card, .story-item, .jql-example, .grammar-box, .stat-card { break-inside: avoid; }
       section { break-inside: avoid-page; page-break-inside: avoid; padding: 32px 0; }
       * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -568,7 +569,7 @@
 <body>
   <!-- MENU -->
   <div class="viz-menu">
-    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="vizMenuDropdown">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
       </svg>
@@ -1072,20 +1073,30 @@
 
   <script>
     // === Menu ===
+    function syncMenuAria() {
+      var button = document.querySelector('.viz-menu-toggle');
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (button && dropdown) {
+        button.setAttribute('aria-expanded', dropdown.classList.contains('open') ? 'true' : 'false');
+      }
+    }
     function toggleMenu() {
       var dropdown = document.getElementById('vizMenuDropdown');
       if (dropdown) dropdown.classList.toggle('open');
+      syncMenuAria();
     }
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.viz-menu')) {
         var dropdown = document.getElementById('vizMenuDropdown');
         if (dropdown) dropdown.classList.remove('open');
+        syncMenuAria();
       }
     });
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         var dropdown = document.getElementById('vizMenuDropdown');
         if (dropdown) dropdown.classList.remove('open');
+        syncMenuAria();
       }
     });
 
@@ -1103,13 +1114,17 @@
     applyTheme(currentTheme);
 
     // === Scroll Reveal ===
-    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
-    var revealObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(e) {
-        if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+    if ('IntersectionObserver' in window) {
+      document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+      var revealObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+    } else {
+      document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal', 'visible'); });
+    }
 
     // === Number Counter ===
     function animateCounters() {
@@ -1140,8 +1155,14 @@
 
     // === Download PNG ===
     async function downloadImage() {
+      if (typeof htmlToImage === 'undefined' || !htmlToImage.toPng) {
+        console.error('htmlToImage is not available (CDN may have failed to load).');
+        alert('이미지 변환 라이브러리를 불러오지 못했습니다. 네트워크 상태를 확인해 주세요.');
+        return;
+      }
       var menu = document.querySelector('.viz-menu');
-      menu.style.display = 'none';
+      var prevDisplay = menu ? menu.style.display : '';
+      if (menu) menu.style.display = 'none';
       try {
         var url = await htmlToImage.toPng(document.body, {
           quality: 1, pixelRatio: 2,
@@ -1154,8 +1175,9 @@
       } catch (e) {
         console.error('Download failed:', e);
         alert('이미지 다운로드에 실패했습니다. 브라우저 콘솔에서 오류를 확인해 주세요.');
+      } finally {
+        if (menu) menu.style.display = prevDisplay;
       }
-      menu.style.display = '';
     }
   </script>
 </body>

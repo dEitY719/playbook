@@ -100,7 +100,7 @@ AIE-{letter}   N=1..5   n=1..4
 
 ## 2. Level 1 — 당신의 Objective (개인)
 
-**파트원 한 명은 Story 를 4개 가집니다**. 이게 당신이 1년 동안 신경써야 할 전부입니다.
+**파트원 한 명은 Story 를 4개 가집니다**. 이게 당신이 1년 동안 신경 써야 할 전부입니다.
 
 ```text
 파트원 δ (예시)
@@ -184,13 +184,13 @@ Story 는 **큰 틀** 입니다. 그 아래에 실제 업무를 **Task / Sub-tas
   └─ SWINNOTEAM-1274: Document Agent 개발  ← 팀 Story (이미 존재, MAU ≥ 5,000명)
       └─ [AIE O-1] 2026 조직목표달성  ← 우리 파트의 P-1
           └─ K-1..K-4 제품 Story
-              └─ 9명의 파트원 M-1 Story
+              └─ 9명의 파트원 O-1 Story
 ```
 
 혁신/개선 (P-2), 조직시너지 (P-3), 역량강화 (P-4) 는 팀 Epic 에 **직접 연결되지는 않지만 간접 기여** 합니다 (E1, E2, E3 와 방향성 일치). 이는 GHRP 평가 로직과 정렬하기 위한 의도적 분리 — 50% 항목인 O-1 만 팀 Story 직속, 나머지는 파트 독립으로 두어 **평가 관점의 명확성** 을 지킵니다.
 
 **핵심**: 당신의 Task 하나를 잘 완료하면 →
-- 당신의 Story (M-) 진행률이 올라가고 →
+- 당신의 Story (O-) 진행률이 올라가고 →
 - 파트 Story (P-) 진행률이 올라가고 →
 - 팀 Story (SWINNOTEAM-1274) 진행률이 올라가고 →
 - 팀 Epic (E4) 달성률이 올라갑니다.
@@ -236,7 +236,7 @@ summary ~ "O-1" AND summary !~ "AIE O-1"
 ```jql
 summary ~ "-λ" AND updated >= -7d
 ```
-→ λ 의 4개 Story (M-1~M-4) 와 그 하위 Task/Sub-task 중 최근 7일 업데이트된 것 전부. **1:1 미팅 자료가 자동 생성** 됨.
+→ λ 의 4개 Story (O-1~O-4) 와 그 하위 Task/Sub-task 중 최근 7일 업데이트된 것 전부. **1:1 미팅 자료가 자동 생성** 됨.
 
 ### 6-3. "혁신/개선업무 (O-2) 쪽 파트 전체 진행률은?"
 
@@ -250,7 +250,7 @@ summary ~ "O-2"
 ```jql
 summary ~ "K-1"
 ```
-→ K-1 파트 Story `[AIE O-1 K-1]` + K-1 담당 파트원 M-1 Story `[AIE-{letter} O-1 K-1]` 들 + 그 하위 Task. **제품팀 스탠드업** 에 그대로 활용 가능.
+→ K-1 파트 Story `[AIE O-1 K-1]` + K-1 담당 파트원 O-1 Story `[AIE-{letter} O-1 K-1]` 들 + 그 하위 Task. **제품팀 스탠드업** 에 그대로 활용 가능.
 
 ### 6-5. "역량강화 (O-4) 자격증/특허 계획을 모은 리스트 줘"
 
@@ -299,7 +299,7 @@ summary ~ "AIE O-5"
 
 | 문서 | 용도 | 접근 권한 |
 |------|------|-----------|
-| `JIRA_Story_draft_2026.md` | 전체 45 Story 상세 스펙 | 파트 전체 |
+| `JIRA_Story_draft_2026.md` | 전체 46 Story 상세 스펙 | 파트 전체 |
 | `paste_ready/AIE-{letter}.md` | 개인별 JIRA 복붙용 | 본인 + TL |
 | `paste_ready/part_independent.md` | 파트 Story 복붙용 | TL |
 | `AIE_member_code_mapping.md` | letter ↔ 실명 매핑 | **TL 전용** |

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상위고과 순환 설계 — 4년에 70%</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    /* ===== THEMES ===== */
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.07);
+      --text: #EDEDED; --text-secondary: #8a8a8a;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --formula-bg: #101418;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.08);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+      --formula-bg: #f4f6fb;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.75; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4 { color: var(--text); letter-spacing: -0.03em; line-height: 1.18; text-wrap: balance; font-family: 'Inter','Noto Sans KR',sans-serif; }
+    h1 { font-weight: 800; }
+    h2 { font-weight: 700; }
+    h3 { font-weight: 700; }
+    p,li,td,th,span,label { color: var(--text); }
+    .text-secondary { color: var(--text-secondary); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 700; }
+
+    .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 56px 0; border-top: 1px solid var(--border); }
+    section:first-of-type { border-top: none; }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+    }
+    .sec-num {
+      font-size: 0.85rem; font-weight: 800; color: var(--accent-secondary);
+      letter-spacing: 0.1em;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 26px;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+    /* ===== HERO ===== */
+    .hero { padding: 80px 0 56px; text-align: center; }
+    .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); margin-bottom: 18px; }
+    .hero .lede { font-size: clamp(1.05rem, 2.4vw, 1.3rem); color: var(--text-secondary); max-width: 660px; margin: 0 auto; }
+    .hero-meta { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .pill { font-size: 0.85rem; padding: 7px 15px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); }
+
+    .bignum-row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-top: 44px; }
+    .bignum {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 28px 30px; min-width: 160px; flex: 1 1 160px; max-width: 220px;
+    }
+    .bignum .v { font-size: clamp(2.4rem, 6vw, 3.4rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+      background: linear-gradient(120deg, var(--accent), var(--accent-secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .bignum .l { margin-top: 12px; font-size: 0.92rem; color: var(--text-secondary); font-weight: 500; }
+
+    /* ===== CALLOUT ===== */
+    .callout {
+      border-left: 4px solid var(--accent); background: var(--surface);
+      border-radius: 0 14px 14px 0; padding: 22px 26px; margin: 22px 0;
+      border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .callout.warn { border-left-color: var(--warning); }
+    .callout.good { border-left-color: var(--positive); }
+    .callout p + p { margin-top: 10px; }
+
+    /* ===== FORMULA ===== */
+    .formula {
+      background: var(--formula-bg); border: 1px solid var(--border); border-radius: 14px;
+      padding: 26px; margin: 20px 0; text-align: center;
+      font-family: 'Inter', serif; font-size: clamp(1.05rem, 3vw, 1.5rem); line-height: 2.1;
+      overflow-x: auto;
+    }
+    .formula .eq { display: inline-block; }
+    .formula .boxed {
+      border: 2px solid var(--accent); border-radius: 8px; padding: 2px 12px;
+      font-weight: 800; color: var(--accent); white-space: nowrap;
+    }
+    .formula var { font-style: italic; font-family: 'Inter', serif; }
+    .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; }
+    .frac .num { border-bottom: 2px solid currentColor; padding: 0 8px; }
+    .frac .den { padding: 0 8px; }
+    .muted-eq { color: var(--text-secondary); font-size: 0.9em; }
+
+    /* ===== TABLE ===== */
+    .tbl-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 460px; }
+    thead th { background: var(--surface-hover); font-weight: 700; text-align: left; padding: 14px 18px; color: var(--text); white-space: nowrap; }
+    tbody td { padding: 13px 18px; border-top: 1px solid var(--border); vertical-align: top; }
+    tbody tr { background: var(--surface); transition: background 0.15s; }
+    tbody tr:hover { background: var(--surface-hover); }
+    .grade-ex { color: var(--accent); font-weight: 800; }
+    .grade-vg { color: var(--accent-secondary); font-weight: 800; }
+
+    /* ===== ROTATION GRID ===== */
+    .rota { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 24px 0; }
+    .year-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 18px; position: relative; overflow: hidden; }
+    .year-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(var(--accent), var(--accent-secondary)); }
+    .year-card .yr { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+    .year-card .cum { font-size: 2rem; font-weight: 800; line-height: 1; margin: 8px 0 14px; }
+    .winners { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 0.82rem; font-weight: 700; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+    .chip.repeat { background: color-mix(in srgb, var(--accent-secondary) 16%, transparent); color: var(--accent-secondary); }
+    .chip.fresh { background: color-mix(in srgb, var(--positive) 16%, transparent); color: var(--positive); }
+    .chip.out { background: var(--surface-hover); color: var(--text-secondary); opacity: 0.6; }
+    .rota-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); }
+    .rota-legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .dot { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+    /* ===== TWO-LAYER ===== */
+    .layers { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 22px 0; }
+    .layer-card { padding: 26px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); }
+    .layer-card .tag { display: inline-block; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; margin-bottom: 14px; }
+    .layer-card.short .tag { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+    .layer-card.long .tag { background: color-mix(in srgb, var(--accent-secondary) 15%, transparent); color: var(--accent-secondary); }
+    .layer-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
+
+    .chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin: 22px 0; }
+    .chart-canvas-holder { position: relative; height: 320px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    ul.clean { list-style: none; }
+    ul.clean li { position: relative; padding-left: 26px; margin: 10px 0; }
+    ul.clean li::before { content: ""; position: absolute; left: 4px; top: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+    .footer { text-align: center; padding: 50px 0 70px; color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .reveal { opacity: 1; transform: none; } }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .card, .year-card, .layer-card, .chart-box { break-inside: avoid; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; }
+
+    /* ===== MENU ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle { width: 44px; height: 44px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.2s; }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown { position: absolute; top: 52px; right: 0; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: all 0.2s; backdrop-filter: blur(16px); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button { width: 100%; padding: 10px 14px; border: none; border-radius: 8px; background: transparent; color: var(--text); font-size: 14px; font-family: inherit; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    .skip-to-content { position: absolute; top: -40px; left: 6px; background: var(--accent); color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 10000; }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+    @media (max-width: 720px) {
+      .rota { grid-template-columns: 1fr 1fr; }
+      .layers, .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px) {
+      .rota { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">본문으로 건너뛰기</a>
+
+  <!-- MENU -->
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="메뉴 열기">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()" aria-label="테마 전환"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+      <button onclick="downloadImage()" aria-label="PNG 저장"><span>📥</span><span>Download PNG</span></button>
+      <button onclick="window.print()" aria-label="인쇄 또는 PDF"><span>🖨️</span><span>Print / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content" role="main">
+
+    <!-- HERO -->
+    <header class="hero wrap">
+      <div class="eyebrow animate">인사 고과 설계 · Company Playbook</div>
+      <h1 class="animate delay-1">상위고과 순환 설계<br><span style="background:linear-gradient(120deg,var(--accent),var(--accent-secondary));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">"4년에 70%"</span> 고과 목표선</h1>
+      <p class="lede animate delay-2">4년에 한 번, 구성원의 70%가 상위고과(EX/VG)를 받는다. 이것은 우연이 아니라 <strong>설계된 확률</strong>이다. 그 숫자가 어디서 나오는지를 수식과 10명 파트 예시로 증명한다.</p>
+      <div class="hero-meta animate delay-3">
+        <span class="pill">대상: TL 1 + 개발자 9 = 10명 파트</span>
+        <span class="pill">닫힌 고과 배분 가정</span>
+        <span class="pill"><a href="https://github.com/dEitY719/dotfiles/discussions/982">RFC · Discussion #982</a></span>
+      </div>
+      <div class="bignum-row animate delay-3">
+        <div class="bignum"><div class="v" data-count="35" data-suffix="%">35%</div><div class="l">연간 상위고과 정원<br>EX 10% + VG 25%</div></div>
+        <div class="bignum"><div class="v" data-count="70" data-suffix="%">70%</div><div class="l">4년 내 최소 수상<br>구성원 비율</div></div>
+        <div class="bignum"><div class="v" data-count="1" data-suffix="년">1년</div><div class="l">쿨다운<br>독점 방지 장치</div></div>
+      </div>
+    </header>
+
+    <!-- TL;DR -->
+    <section class="wrap" data-reveal>
+      <span class="eyebrow">TL;DR</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin-bottom:8px;">목표선을 뒤집으면, 메시지는 단순해진다</h2>
+      <p class="text-secondary" style="margin-bottom:18px;">4년 동안 한 번도 상위고과를 받지 못했다면, 둘 중 하나다.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="font-size:1.1rem;color:var(--warning);">① 구조적 한계</h3>
+          <p style="margin-top:8px;">고과 Pool(상위고과 정원)이 작은 조직에 속해 있다. <strong>내 역량과 무관하게</strong> 자리가 부족했다.</p>
+        </div>
+        <div class="card">
+          <h3 style="font-size:1.1rem;color:var(--negative);">② 역량 신호</h3>
+          <p style="margin-top:8px;">4년 내내 상위 70% 안에 들지 못한, <strong>지속적인 하위 30%</strong>였다.</p>
+        </div>
+      </div>
+      <div class="callout good">
+        <p>즉 "상위고과를 못 받았다"는 결과는 <strong>운이 아니라 설계된 확률</strong>이다. 70%는 4년이면 반드시 한 바퀴 도는 자리이고, 그 회전에 끝내 올라타지 못했다는 것은 위 두 가지 중 하나로 환원된다.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 1 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 01</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 6px;">설계 기준 — EX 10% / VG 25%</h2>
+      <p class="text-secondary" style="margin-bottom:14px;">회사 고과는 5등급이며, 상위 2개 등급에 정원 비율이 못 박혀 있다.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>등급</th><th>의미</th><th>정원</th></tr></thead>
+          <tbody>
+            <tr><td class="grade-ex">EX (Excellent)</td><td>최상위</td><td>상위 <strong>10%</strong></td></tr>
+            <tr><td class="grade-vg">VG (Very Good)</td><td>우수</td><td>다음 <strong>25%</strong></td></tr>
+            <tr><td>GD (Good)</td><td>표준</td><td class="text-secondary">—</td></tr>
+            <tr><td>NI (Need Improvement)</td><td>개선 필요</td><td class="text-secondary">—</td></tr>
+            <tr><td>UN (Unsatisfactory)</td><td>미흡</td><td class="text-secondary">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="formula">
+        <span class="eq">10% + 25% = <span class="boxed">35%</span></span>
+      </div>
+      <p class="text-secondary" style="text-align:center;">매년 상위고과(EX + VG) 정원 — <strong>이 35%가 모든 계산의 출발점이다.</strong></p>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 02</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 6px;">"70%"는 어디서 나오는가 — 수식 유도</h2>
+      <p class="text-secondary" style="margin-bottom:14px;">핵심 장치는 <strong>1년 쿨다운</strong>이다. 상위고과를 받은 사람은 다음 해 후보에서 제외된다(독점 방지). 그 결과 한 사람은 4년 안에 <strong>격년으로 최대 2번만</strong> 수상할 수 있다.</p>
+      <p class="text-secondary" style="margin-bottom:6px;">구성원 수를 <var>N</var>, 연간 상위고과 정원을 <var>T</var> = 0.35<var>N</var> 이라 하면:</p>
+      <div class="formula" style="text-align:left;line-height:2.6;">
+        <div>4년간 총 슬롯 &nbsp;=&nbsp; 4 × <var>T</var> &nbsp;=&nbsp; 4 × 0.35<var>N</var> &nbsp;=&nbsp; <strong>1.4<var>N</var></strong></div>
+        <div>1인당 4년 최대 수상 &nbsp;=&nbsp; <strong>2</strong> &nbsp;<span class="muted-eq">(1년 쿨다운 ⇒ 격년)</span></div>
+        <div>서로 다른 수상자(최소) &nbsp;=&nbsp;
+          <span class="frac"><span class="num">슬롯</span><span class="den">1인 최대</span></span> =
+          <span class="frac"><span class="num">1.4<var>N</var></span><span class="den">2</span></span> =
+          <span class="boxed">0.7<var>N</var></span>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>결론:</strong> "상위고과 35% 정원 + 1년 쿨다운" 조합은, <var>N</var>이 몇 명이든 <strong>어떤 4년 구간에서도 최소 70%의 구성원이 상위고과를 받게</strong> 만든다. 70%는 임의의 숫자가 아니라 <code>2 × 35%</code> 라는 설계 항등식의 결과다.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 03</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 6px;">10명 파트 예시</h2>
+      <p class="text-secondary" style="margin-bottom:14px;">구성원 <var>N</var> = 10 에 대입한다.</p>
+
+      <h3 style="font-size:1.15rem;margin:8px 0 10px;">3.1 정원 계산</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>항목</th><th>계산</th><th>결과</th></tr></thead>
+          <tbody>
+            <tr><td>EX 정원</td><td>10% × 10</td><td><strong>1명</strong></td></tr>
+            <tr><td>VG 정원</td><td>25% × 10 = 2.5 → 올림/버림(조직 정책)</td><td><strong>2~3명</strong></td></tr>
+            <tr><td>상위고과 정원 <var>T</var></td><td>EX + VG</td><td><strong>3~4명 / 년</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <p>본 파트는 운영상 <strong>연 3명(EX 1 + VG 2)</strong> 으로 고정한다(연 4명 미운영). 이 경우는 §5에서 따로 다룬다.</p>
+      </div>
+
+      <h3 style="font-size:1.15rem;margin:26px 0 6px;">3.2 4년 회전표 — 정원 4명 기준</h3>
+      <p class="text-secondary" style="margin-bottom:6px;">정원을 35%에 충실하게 <var>T</var> = 4 로 두면, 1년 쿨다운만으로 목표가 보장된다.</p>
+      <div class="rota">
+        <div class="year-card">
+          <div class="yr">1년차</div>
+          <div class="cum">4명</div>
+          <div class="winners"><span class="chip">A</span><span class="chip">B</span><span class="chip">C</span><span class="chip">D</span></div>
+        </div>
+        <div class="year-card">
+          <div class="yr">2년차</div>
+          <div class="cum">8명</div>
+          <div class="winners"><span class="chip fresh">E</span><span class="chip fresh">F</span><span class="chip fresh">G</span><span class="chip fresh">H</span></div>
+        </div>
+        <div class="year-card">
+          <div class="yr">3년차</div>
+          <div class="cum">8명</div>
+          <div class="winners"><span class="chip repeat">A</span><span class="chip repeat">B</span><span class="chip repeat">C</span><span class="chip repeat">D</span></div>
+        </div>
+        <div class="year-card">
+          <div class="yr">4년차</div>
+          <div class="cum" style="color:var(--positive);">10명 · 100%</div>
+          <div class="winners"><span class="chip repeat">E</span><span class="chip repeat">F</span><span class="chip fresh">I</span><span class="chip fresh">J</span></div>
+        </div>
+      </div>
+      <div class="rota-legend">
+        <span><i class="dot" style="background:color-mix(in srgb,var(--accent) 50%,transparent);"></i> 1회 수상</span>
+        <span><i class="dot" style="background:color-mix(in srgb,var(--positive) 60%,transparent);"></i> 신규 진입</span>
+        <span><i class="dot" style="background:color-mix(in srgb,var(--accent-secondary) 60%,transparent);"></i> 2회째 (격년)</span>
+      </div>
+      <ul class="clean" style="margin-top:18px;">
+        <li>1·2년차만에 이미 8명(80%)이 한 번씩 수상 → <strong>70% 목표선 초과 달성</strong>.</li>
+        <li>잘하는 A~D는 격년으로 최대 2회까지 수상(실력 보상 유지).</li>
+        <li>가장 아쉬운 I·J도 누적된 "대기 가산점" 덕에 4년차에 진입.</li>
+      </ul>
+
+      <h3 style="font-size:1.15rem;margin:26px 0 6px;">3.3 못 받는 사람은 누구인가</h3>
+      <p>위 표에서 <strong>4년 안에 상위고과를 한 번도 못 받는 자리는 존재하지 않는다</strong>(정원 4명 기준 100%). 끝내 못 받았다면 그 사람은 정의상 매년 평가에서 <strong>상위 <var>T</var>등 밖</strong>에 머물렀고, 쌓인 대기 가산점으로도 역전하지 못할 만큼 <strong>지속적으로 하위권</strong>이었다는 뜻이다 — 이것이 TL;DR의 "하위 30%" 해석이다.</p>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 04</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 14px;">"못 받는 30%"의 두 해석</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>해석</th><th>원인</th><th>처방</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><strong style="color:var(--warning);">Pool이 작은 조직</strong></td>
+              <td>구성원 수가 적어 <var>T</var> = 0.35<var>N</var> 을 반올림하면 정원이 깎인다. 예: <var>N</var>=10, VG를 2로 내림 → 정원 3명 → 보장 60%로 하락</td>
+              <td>조직 합류·정원 정책 차원의 문제. <strong>개인 역량과 무관</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><strong style="color:var(--negative);">지속적 하위 30%</strong></td>
+              <td>4년 내내 상위 70% 회전에 올라타지 못함</td>
+              <td>성과 점수(<var>P</var>) 개선이 <strong>유일한 경로</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <p>두 해석을 가르는 기준은 명확하다. <strong>정원(Pool)이 충분(35% 유지)한데도 못 받았다면 (2)</strong>, <strong>정원 자체가 반올림으로 깎인 작은 조직이면 (1)</strong>.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 05</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 6px;">보강 — 연 3명(EX 1 + VG 2) 운영 시</h2>
+      <p class="text-secondary" style="margin-bottom:14px;">정원을 35%보다 작게(연 3명 = 30%) 잡으면, <strong>1년 쿨다운만으로는 70%가 보장되지 않는다.</strong></p>
+      <div class="formula"><span class="muted-eq">최악의 경우</span> = 2<var>T</var> = 2 × 3 = <span class="boxed" style="border-color:var(--warning);color:var(--warning);">6명 = 60%</span></div>
+      <p>이때 70%를 끌어올리는 것은 <strong>대기 가산점</strong>이다. 매년 점수를 다음과 같이 매긴다:</p>
+      <div class="formula"><var>S<sub>i</sub></var> = <var>P<sub>i</sub></var> + <var>b</var> × <var>w<sub>i</sub></var></div>
+      <p class="text-secondary"><var>P<sub>i</sub></var> 는 그해 실제 성과, <var>w<sub>i</sub></var> 는 마지막 수상 이후 경과한 햇수(수상이력이 없으면 입사일/제도 도입 시점 기준), <var>b</var> 는 가산점 단가다. 미수상자는 <var>w</var> 가 매년 쌓여 결국 순위를 역전한다.</p>
+
+      <div class="chart-box">
+        <h3 style="font-size:1.05rem;margin-bottom:4px;">가산점 단가 <var>b</var> 에 따른 4년차 누적 수상자</h3>
+        <p class="text-secondary" style="font-size:0.85rem;margin-bottom:14px;">성과척도 0~100 기준 · 연 3명 체제</p>
+        <div class="chart-canvas-holder">
+          <canvas id="bChart" aria-label="가산점 단가 b에 따른 4년차 누적 수상자 비율 막대 차트" role="img"></canvas>
+        </div>
+      </div>
+      <div class="callout good">
+        <p>연 3명 체제에서 70%는 <em>쿨다운이 주는 보장</em>이 아니라 <em>가산점이 만드는 현실치</em>다 (Discussion #982 의 시뮬레이션 조건 기준 — 임의의 성과 분포에서 항상 성립하는 상수는 아님). 권장값 <strong><var>b</var> ≈ <var>R</var>/4</strong> (성과 스프레드 <var>R</var> 기준, 0~100이면 <var>b</var> ≈ 15).</p>
+      </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 06</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 14px;">메커니즘 요약 — 2층 구조</h2>
+      <div class="layers">
+        <div class="layer-card short">
+          <span class="tag">단기 · SHORT-TERM</span>
+          <h3>1년 쿨다운</h3>
+          <p class="text-secondary">아무도 2년 연속 독점 불가 → <strong style="color:var(--text);">70% 바닥</strong>을 보장한다.</p>
+        </div>
+        <div class="layer-card long">
+          <span class="tag">장기 · LONG-TERM</span>
+          <h3>대기 가산점 <var>b</var>·<var>w</var></h3>
+          <p class="text-secondary">약체도 결국 순위 역전 → <strong style="color:var(--text);">나머지 30%도 N년 내 진입</strong>.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.05rem;margin-bottom:10px;">🛡️ 안전장치</h3>
+        <ul class="clean">
+          <li><strong>동점</strong> → 대기 햇수 긴 사람 우선</li>
+          <li><strong>사보타주</strong>(일부러 저성과) → 가산점을 못 키워 무효</li>
+          <li><strong>진짜 저성과(NI/UN)</strong> → 가산점 혜택에서 제외 (무능자 차단 게이트)</li>
+          <li><strong>공식은 사전 공개</strong> → 투명성 보장</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SECTION 7 -->
+    <section class="wrap" data-reveal>
+      <span class="sec-num">SECTION 07</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem);margin:6px 0 14px;">전제와 한계</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="font-size:1.05rem;">닫힌 시스템 가정</h3>
+          <p class="text-secondary" style="margin-top:8px;">팀에 상위고과 정원이 보장 배분된다고 가정. 회사 전체 풀 경쟁(열린 시스템)이면 본 룰은 "내부 추천 순위"로만 기능한다.</p>
+        </div>
+        <div class="card">
+          <h3 style="font-size:1.05rem;">최악 60% 보장 (연 3명)</h3>
+          <p class="text-secondary" style="margin-top:8px;">극단적 담합/실력 편중 시 이론적 하한은 60%. 현실에서는 가산점이 ~80%로 끌어올린다.</p>
+        </div>
+        <div class="card" style="grid-column:1/-1;">
+          <h3 style="font-size:1.05rem;">성과 점수 <var>P</var> 의 합의</h3>
+          <p class="text-secondary" style="margin-top:8px;">본 설계는 <var>P</var> 산정 기준이 공정하다는 전제 위에서만 성립한다.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer wrap">
+      <p><strong>References</strong></p>
+      <p style="margin-top:8px;"><a href="https://github.com/dEitY719/dotfiles/discussions/982">Discussion #982</a> — 본 설계의 RFC 원문 (트릴레마·시뮬레이션·Open Questions 포함)</p>
+      <p style="margin-top:6px;">설계 기준: EX(상위 10%) + VG(다음 25%) = 상위고과 35% 정원</p>
+    </footer>
+
+  </main>
+
+  <script>
+    // === Menu ===
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+
+    // === Theme ===
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+      if (typeof onThemeChange === 'function') onThemeChange();
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    // === Scroll Reveal ===
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    // === Number Counter ===
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(function(el) {
+        if (el.dataset.counted) return;
+        el.dataset.counted = '1';
+        var target = parseFloat(el.dataset.count), prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
+        var start = performance.now(), duration = 1200;
+        (function tick(now) {
+          var p = Math.min((now - start) / duration, 1), eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + Math.round(target * eased).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        })(start);
+      });
+    }
+    var counterEl = document.querySelector('[data-count]');
+    if (counterEl) {
+      var cObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) { if (e.isIntersecting) { animateCounters(); cObs.disconnect(); } });
+      }, { threshold: 0.3 });
+      cObs.observe(counterEl);
+    }
+
+    // === Download PNG ===
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2, filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a'); a.href = url;
+        a.download = document.title.replace(/\s+/g, '-').toLowerCase() + '.png'; a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+
+    // === Chart.js ===
+    if (typeof Chart !== 'undefined') { Chart.defaults.animation = false; }
+    var bChartInstance = null;
+    function buildCharts() {
+      if (typeof Chart === 'undefined') return;
+      var isDark = document.documentElement.classList.contains('theme-dark');
+      var textColor = isDark ? '#EDEDED' : '#0f172a';
+      var gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+      var css = getComputedStyle(document.documentElement);
+      var accent = css.getPropertyValue('--accent').trim();
+      var positive = css.getPropertyValue('--positive').trim();
+      var warning = css.getPropertyValue('--warning').trim();
+
+      var ctx = document.getElementById('bChart');
+      if (!ctx) return;
+      if (bChartInstance) { bChartInstance.destroy(); }
+      bChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['b 과소', 'b = 10', 'b = 15 (권장)'],
+          datasets: [{
+            label: '4년차 누적 수상자 (%)',
+            data: [60, 70, 80],
+            backgroundColor: [warning, accent, positive],
+            borderRadius: 8,
+            maxBarThickness: 90
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  var notes = { 60: '미달 위험', 70: '목표선 도달(여유 없음)', 80: '권장' };
+                  return c.parsed.y + '% — ' + (notes[c.parsed.y] || '');
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true, max: 100,
+              ticks: { color: textColor, callback: function(v) { return v + '%'; } },
+              grid: { color: gridColor },
+              title: { display: true, text: '누적 수상자 비율', color: textColor }
+            },
+            x: { ticks: { color: textColor, font: { weight: '600' } }, grid: { display: false } }
+          }
+        }
+      });
+      // 70% target line via subtitle is omitted; visual bars carry the message.
+    }
+    function onThemeChange() { buildCharts(); }
+    window.addEventListener('load', buildCharts);
+  </script>
+</body>
+</html>

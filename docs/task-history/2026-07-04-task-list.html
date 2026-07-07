@@ -1,529 +1,493 @@
 <!DOCTYPE html>
-<html lang="ko" class="theme-light">
+<html lang="ko" class="theme-dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>avatar-browse IA 재설계 — 14일 딜리버리 리포트</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>if (typeof Chart !== 'undefined') { Chart.defaults.animation = false; }</script>
-  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { interpolate-size: allow-keywords; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>avatar-browse IA 재설계 — 14일 딜리버리 리포트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>if (typeof Chart !== 'undefined') { Chart.defaults.animation = false; }</script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<style>
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html.theme-dark {
-      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
-      --border: rgba(255,255,255,0.07);
-      --text: #EDEDED; --text-secondary: #8a8a8a;
-      --accent: #3b82f6; --accent-secondary: #8b5cf6;
-      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
-      --grid: rgba(255,255,255,0.06);
-    }
-    html.theme-light {
-      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
-      --border: rgba(0,0,0,0.08);
-      --text: #0f172a; --text-secondary: #64748b;
-      --accent: #2563eb; --accent-secondary: #7c3aed;
-      --positive: #059669; --negative: #e11d48; --warning: #d97706;
-      --grid: rgba(0,0,0,0.06);
-    }
+html.theme-dark {
+  --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+  --border: rgba(255,255,255,0.06); --border-strong: rgba(255,255,255,0.11);
+  --text: #EDEDED; --text-secondary: #8a8a8a;
+  --accent: #8b5cf6; --accent-secondary: #a78bfa;
+  --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b; --info: #06b6d4;
+  --code-bg: #111; --grid: rgba(255,255,255,0.05);
+  --c-ux: #8b5cf6; --c-data: #06b6d4; --c-infra: #10b981; --c-fix: #f59e0b;
+}
+html.theme-light {
+  --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+  --border: rgba(0,0,0,0.07); --border-strong: rgba(0,0,0,0.13);
+  --text: #1a1a1a; --text-secondary: #666;
+  --accent: #7c3aed; --accent-secondary: #6d28d9;
+  --positive: #059669; --negative: #e11d48; --warning: #d97706; --info: #0891b2;
+  --code-bg: #f4f4f0; --grid: rgba(0,0,0,0.06);
+  --c-ux: #7c3aed; --c-data: #0891b2; --c-infra: #059669; --c-fix: #d97706;
+}
 
-    body {
-      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg); color: var(--text);
-      line-height: 1.65; -webkit-font-smoothing: antialiased;
-      letter-spacing: -0.01em;
-      transition: background 0.3s, color 0.3s;
-      scrollbar-gutter: stable;
-    }
-    h1,h2,h3,h4 { color: var(--text); letter-spacing: -0.03em; line-height: 1.12; text-wrap: balance; }
-    .text-secondary { color: var(--text-secondary); }
-    .mono { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-    a { color: var(--accent); text-decoration: none; }
+body {
+  font-family: 'Noto Sans KR','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.65; -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em; transition: background .3s, color .3s;
+}
+body::before {
+  content:''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 85% 55% at 50% -8%, color-mix(in srgb, var(--accent), transparent 88%), transparent 70%);
+}
+h1,h2,h3,h4 { letter-spacing: -0.03em; line-height: 1.12; }
+.mono { font-family: 'JetBrains Mono','Inter',monospace; font-variant-numeric: tabular-nums; }
+.num { font-family: 'Inter',sans-serif; font-variant-numeric: tabular-nums; }
+code {
+  font-family: 'JetBrains Mono',monospace; font-size: .82em;
+  background: var(--code-bg); padding: 2px 7px; border-radius: 5px; color: var(--accent-secondary);
+}
+a { color: var(--accent-secondary); text-decoration: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
-    /* atmosphere */
-    body::before {
-      content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background:
-        radial-gradient(1200px 600px at 80% -5%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
-        radial-gradient(900px 500px at 0% 0%, color-mix(in srgb, var(--accent-secondary) 10%, transparent), transparent 55%);
-    }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
 
-    /* header */
-    header.hero { padding: 84px 0 40px; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
-      color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
-      padding: 6px 14px; border-radius: 999px; margin-bottom: 22px;
-    }
-    .hero h1 { font-size: clamp(2.1rem, 5.2vw, 3.5rem); font-weight: 800; margin-bottom: 18px; }
-    .hero .lede { font-size: clamp(1.05rem, 2.2vw, 1.3rem); color: var(--text-secondary); max-width: 760px; font-weight: 400; }
-    .hero .meta { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 10px; }
-    .chip {
-      font-size: 13px; font-weight: 500; padding: 6px 13px; border-radius: 8px;
-      background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
-    }
-    .chip b { color: var(--text); font-weight: 700; }
+/* skip link */
+.skip-link {
+  position: absolute; left: -9999px; top: auto; z-index: 100;
+  background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 6px;
+}
+.skip-link:focus { left: 16px; top: 16px; }
 
-    /* section */
-    section { padding: 34px 0; }
-    .sec-label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-    .sec-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 8px; }
-    .sec-sub { color: var(--text-secondary); max-width: 780px; margin-bottom: 26px; }
+/* menu */
+.viz-menu { position: fixed; top: 16px; right: 16px; z-index: 999; display: flex; gap: 8px; }
+.viz-menu button {
+  height: 40px; padding: 0 13px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  color: var(--text-secondary); cursor: pointer; font-family: inherit; font-size: 13px;
+  display: flex; align-items: center; gap: 7px; transition: all .15s; backdrop-filter: blur(10px);
+}
+.viz-menu button:hover { background: var(--surface-hover); color: var(--text); border-color: var(--accent); }
+.viz-menu svg { width: 16px; height: 16px; }
 
-    /* KPI grid */
-    .kpi-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    .kpi {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 26px 24px;
-      transition: box-shadow .2s ease, transform .2s ease; position: relative; overflow: hidden;
-    }
-    .kpi:hover { box-shadow: 0 10px 30px rgba(0,0,0,.10); transform: translateY(-3px); }
-    .kpi .val { font-size: clamp(2.2rem, 4.5vw, 3rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
-    .kpi .unit { font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); margin-left: 3px; }
-    .kpi .label { margin-top: 12px; font-size: 14px; color: var(--text-secondary); font-weight: 500; }
-    .kpi .sub { margin-top: 4px; font-size: 12.5px; color: var(--text-secondary); opacity: .8; }
-    .kpi.accent .val { color: var(--accent); }
-    .kpi.pos .val { color: var(--positive); }
-    .kpi.neg .val { color: var(--negative); }
+/* hero */
+.hero { text-align: center; padding: 96px 28px 56px; position: relative; }
+.hero-icon { width: 46px; height: 46px; color: var(--accent); margin: 0 auto 22px; display: block; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600;
+  font-family: 'Inter',sans-serif; letter-spacing: .01em;
+  color: var(--accent-secondary); background: color-mix(in srgb, var(--accent), transparent 88%);
+  border: 1px solid color-mix(in srgb, var(--accent), transparent 70%);
+  padding: 6px 15px; border-radius: 999px; margin-bottom: 22px;
+}
+.hero h1 { font-size: clamp(2rem, 5.2vw, 3.35rem); font-weight: 800; max-width: 15ch; margin: 0 auto 20px; }
+.hero-desc {
+  font-size: clamp(1rem, 2vw, 1.18rem); color: var(--text-secondary); font-weight: 400;
+  max-width: 62ch; margin: 0 auto 40px;
+}
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  max-width: 760px; margin: 0 auto;
+  background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+}
+.hero-stat { background: var(--surface); padding: 26px 16px; }
+.hero-stat-num { font-family: 'Inter',sans-serif; font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1; letter-spacing: -0.04em; }
+.hero-stat-num.accent { color: var(--accent); }
+.hero-stat-num.pos { color: var(--positive); }
+.hero-stat-label { font-family: 'Inter',sans-serif; font-size: 12px; color: var(--text-secondary); margin-top: 9px; font-weight: 500; }
+.hero-stat-sub { font-size: 11px; color: var(--text-secondary); opacity: .7; margin-top: 3px; }
 
-    /* perception vs reality */
-    .pvr { display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
-    .pvr-card { border-radius: 16px; padding: 30px; border: 1px solid var(--border); }
-    .pvr-card.myth { background: color-mix(in srgb, var(--negative) 7%, var(--surface)); }
-    .pvr-card.real { background: color-mix(in srgb, var(--positive) 8%, var(--surface)); }
-    .pvr-card h3 { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .pvr-card .tag { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
-    .pvr-card.myth .tag { background: color-mix(in srgb, var(--negative) 18%, transparent); color: var(--negative); }
-    .pvr-card.real .tag { background: color-mix(in srgb, var(--positive) 18%, transparent); color: var(--positive); }
-    .pvr-card p { font-size: 15px; color: var(--text); }
-    .pvr-card ul { list-style: none; margin-top: 10px; display: grid; gap: 8px; }
-    .pvr-card li { font-size: 14px; padding-left: 24px; position: relative; color: var(--text); }
-    .pvr-card.real li::before { content: '✓'; position: absolute; left: 0; color: var(--positive); font-weight: 800; }
+/* section */
+section.block { padding: 44px 0; }
+.section-label {
+  font-family: 'Inter',sans-serif; text-transform: uppercase; letter-spacing: .09em;
+  font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 9px;
+}
+.section-title { font-size: clamp(1.5rem, 3.2vw, 2.05rem); font-weight: 700; margin-bottom: 10px; }
+.section-desc { color: var(--text-secondary); max-width: 68ch; margin-bottom: 30px; font-size: 15px; }
 
-    /* chart */
-    .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
-    .chart-box { position: relative; height: 340px; }
-    .chart-legend-note { margin-top: 14px; font-size: 12.5px; color: var(--text-secondary); }
+/* card base */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 26px; transition: box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover { box-shadow: 0 0 0 1px var(--border-strong), 0 10px 26px rgba(0,0,0,.16); }
 
-    /* timeline (two-phase) */
-    .phases { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
-    .phase {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px;
-      position: relative;
-    }
-    .phase::before { content: ''; position: absolute; left: 0; top: 24px; bottom: 24px; width: 4px; border-radius: 4px; }
-    .phase.p1::before { background: var(--accent); }
-    .phase.p2::before { background: var(--accent-secondary); }
-    .phase .ph-range { font-size: 13px; font-weight: 700; color: var(--text-secondary); letter-spacing: .02em; }
-    .phase .ph-title { font-size: 1.2rem; font-weight: 700; margin: 6px 0 6px; }
-    .phase .ph-sub { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 14px; }
-    .phase .ph-stats { display: flex; flex-wrap: wrap; gap: 8px; }
-    .phase .ph-stats span { font-size: 12.5px; padding: 5px 11px; border-radius: 7px; background: var(--surface-hover); border: 1px solid var(--border); font-weight: 500; }
+/* perception vs reality */
+.pvr { display: grid; grid-template-columns: 1fr 1.35fr; gap: 20px; }
+.pvr .panel { border-radius: 16px; padding: 30px; border: 1px solid var(--border); }
+.pvr .myth { background: color-mix(in srgb, var(--negative), transparent 93%); }
+.pvr .real { background: color-mix(in srgb, var(--positive), transparent 93%); }
+.pvr h3 { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.pill { font-family:'Inter',sans-serif; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; letter-spacing: .03em; }
+.myth .pill { background: color-mix(in srgb, var(--negative), transparent 82%); color: var(--negative); }
+.real .pill { background: color-mix(in srgb, var(--positive), transparent 80%); color: var(--positive); }
+.pvr p { font-size: 14.5px; color: var(--text-secondary); }
+.pvr ul { list-style: none; margin-top: 6px; display: grid; gap: 9px; }
+.pvr .real li { font-size: 14px; padding-left: 26px; position: relative; color: var(--text); }
+.pvr .real li svg { position: absolute; left: 0; top: 3px; width: 16px; height: 16px; color: var(--positive); }
 
-    /* workstreams */
-    .ws-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-    .ws {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px;
-      transition: box-shadow .2s ease, transform .2s ease;
-    }
-    .ws:hover { box-shadow: 0 8px 22px rgba(0,0,0,.09); transform: translateY(-2px); }
-    .ws .ic { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; background: color-mix(in srgb, var(--accent) 13%, transparent); }
-    .ws h4 { font-size: 1.02rem; margin-bottom: 7px; }
-    .ws p { font-size: 13.5px; color: var(--text-secondary); }
-    .ws .prs { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .ws .pr { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 6px; background: var(--surface-hover); border: 1px solid var(--border); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-    .ws.feature .ic { background: color-mix(in srgb, var(--accent-secondary) 15%, transparent); }
-    .ws.ux .ic { background: color-mix(in srgb, var(--warning) 16%, transparent); }
-    .ws.data .ic { background: color-mix(in srgb, var(--positive) 15%, transparent); }
+/* chart */
+.chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 30px; }
+.chart-box { position: relative; height: 330px; }
+.chart-note { margin-top: 15px; font-size: 12.5px; color: var(--text-secondary); }
 
-    /* highlight banner (meticulous ux) */
-    .banner {
-      border-radius: 16px; padding: 34px; border: 1px solid var(--border);
-      background: linear-gradient(135deg, color-mix(in srgb, var(--warning) 10%, var(--surface)), var(--surface));
-      display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center;
-    }
-    .banner .big { font-size: clamp(3rem, 8vw, 4.5rem); font-weight: 800; color: var(--warning); line-height: 1; letter-spacing: -0.05em; }
-    .banner h3 { font-size: 1.25rem; margin-bottom: 8px; }
-    .banner p { font-size: 14.5px; color: var(--text-secondary); }
-    .banner .flow { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
-    .banner .step { padding: 5px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); font-weight: 600; }
-    .banner .arr { color: var(--text-secondary); }
+/* two-phase */
+.phases { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.phase { position: relative; padding-left: 22px; }
+.phase::before { content:''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 3px; }
+.phase.p1::before { background: var(--accent); }
+.phase.p2::before { background: var(--info); }
+.phase .range { font-family:'Inter',sans-serif; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); letter-spacing:.02em; }
+.phase h3 { font-size: 1.15rem; margin: 7px 0; }
+.phase .sub { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 16px; }
+.phase .stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.phase .stats span { font-family:'Inter',sans-serif; font-size: 12px; padding: 5px 11px; border-radius: 7px; background: var(--surface-hover); border: 1px solid var(--border); font-weight: 500; }
 
-    /* footer */
-    footer { padding: 50px 0 70px; border-top: 1px solid var(--border); margin-top: 30px; }
-    footer .src { font-size: 12.5px; color: var(--text-secondary); }
-    footer code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--surface-hover); padding: 2px 7px; border-radius: 5px; }
+/* workstream grid */
+.ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.ws-icon { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+.ws-icon svg { width: 21px; height: 21px; }
+.ws h4 { font-size: 1.02rem; margin-bottom: 8px; }
+.ws p { font-size: 13.3px; color: var(--text-secondary); line-height: 1.6; }
+.ws .prs { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+.ws .pr { font-family:'JetBrains Mono',monospace; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: var(--surface-hover); border: 1px solid var(--border); color: var(--text-secondary); }
+.c-ux .ws-icon { background: color-mix(in srgb, var(--c-ux), transparent 85%); color: var(--c-ux); }
+.c-data .ws-icon { background: color-mix(in srgb, var(--c-data), transparent 85%); color: var(--c-data); }
+.c-infra .ws-icon { background: color-mix(in srgb, var(--c-infra), transparent 85%); color: var(--c-infra); }
+.c-fix .ws-icon { background: color-mix(in srgb, var(--c-fix), transparent 85%); color: var(--c-fix); }
 
-    /* menu */
-    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
-    .viz-menu-toggle { width: 44px; height: 44px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.2s; }
-    .viz-menu-toggle:hover { background: var(--surface-hover); }
-    .viz-menu-dropdown { position: absolute; top: 52px; right: 0; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: all 0.2s; backdrop-filter: blur(16px); box-shadow: 0 12px 40px rgba(0,0,0,.18); }
-    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
-    .viz-menu-dropdown button { width: 100%; padding: 10px 14px; border: none; border-radius: 8px; background: transparent; color: var(--text); font-size: 14px; font-family: inherit; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
-    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+/* flow */
+.flow-headline { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.flow-big { font-family:'Inter',sans-serif; font-size: clamp(3rem,7vw,4.2rem); font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -0.05em; }
+.flow-list { display: flex; flex-direction: column; gap: 0; }
+.flow-step { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 11px; transition: background .15s; }
+.flow-step:hover { background: var(--surface-hover); }
+.flow-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 7px; background: color-mix(in srgb, var(--accent), transparent 85%); color: var(--accent); font-family:'Inter',sans-serif; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.flow-step .txt { font-size: 14px; }
+.flow-step .pr { margin-left: auto; font-family:'JetBrains Mono',monospace; font-size: 11.5px; color: var(--text-secondary); flex-shrink: 0; }
+.flow-connector { width: 2px; height: 10px; background: var(--border-strong); margin-left: 27px; }
 
-    .skip-to-content { position: absolute; top: -40px; left: 6px; background: var(--accent); color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 10000; }
-    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+/* team callout */
+.team { border-radius: 14px; padding: 24px 26px; background: color-mix(in srgb, var(--warning), transparent 94%); border: 1px solid color-mix(in srgb, var(--warning), transparent 80%); }
+.team h4 { font-size: 1rem; margin-bottom: 9px; display: flex; align-items: center; gap: 9px; }
+.team h4 svg { width: 18px; height: 18px; color: var(--warning); }
+.team p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; }
 
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-    .animate { animation: fadeInUp 0.6s ease-out both; }
-    .animate.delay-1 { animation-delay: 0.08s; }
-    .animate.delay-2 { animation-delay: 0.16s; }
-    .animate.delay-3 { animation-delay: 0.24s; }
-    .animate.delay-4 { animation-delay: 0.32s; }
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+/* footer */
+footer { padding: 46px 0 72px; border-top: 1px solid var(--border); margin-top: 34px; }
+footer p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.75; }
+footer p + p { margin-top: 10px; }
 
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .reveal { opacity: 1; transform: none; } }
+/* animations */
+.animate { opacity: 0; transform: translateY(18px); animation: fadeUp .6s ease forwards; }
+.animate.d1 { animation-delay: .08s; } .animate.d2 { animation-delay: .16s; }
+.animate.d3 { animation-delay: .24s; } .animate.d4 { animation-delay: .32s; }
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+[data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
+[data-reveal].revealed { opacity: 1; transform: translateY(0); }
 
-    @media print {
-      body { background: white !important; color: black !important; }
-      body::before { display: none; }
-      .viz-menu { display: none; }
-      .reveal { opacity: 1 !important; transform: none !important; }
-      .kpi, .ws, .phase, .chart-wrap, .pvr-card { break-inside: avoid; box-shadow: none; }
-      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    }
-    @page { margin: 0.8in; }
-
-    @media (max-width: 820px) {
-      .pvr, .phases { grid-template-columns: 1fr; }
-      .banner { grid-template-columns: 1fr; text-align: left; }
-    }
-    @media (max-width: 375px) {
-      .wrap { padding: 0 16px; }
-      .kpi { padding: 20px 18px; }
-    }
-  </style>
+@media print {
+  body { background: #fff; color: #000; } body::before { display: none; }
+  .viz-menu { display: none; }
+  .animate,[data-reveal] { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .card,.phase,.ws,.chart-wrap { break-inside: avoid; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate { animation: none !important; opacity: 1; transform: none; }
+  [data-reveal] { transition: none !important; opacity: 1; transform: none; }
+}
+@media (max-width: 860px) {
+  .pvr, .phases { grid-template-columns: 1fr; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 375px) {
+  .wrap { padding: 0 18px; } .hero { padding: 72px 18px 44px; }
+  .card { padding: 20px; }
+}
+</style>
 </head>
 <body>
-  <a href="#main-content" class="skip-to-content">Skip to content</a>
+<a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
 
-  <div class="viz-menu">
-    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
-      </svg>
-    </button>
-    <div class="viz-menu-dropdown" id="vizMenuDropdown">
-      <button onclick="cycleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
-      <button onclick="downloadImage()"><span>📥</span><span>Download PNG</span></button>
-      <button onclick="window.print()"><span>🖨️</span><span>Print / PDF</span></button>
+<nav class="viz-menu" aria-label="페이지 도구">
+  <button onclick="cycleTheme()" aria-label="테마 전환" id="themeBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <span id="themeLabel">Light</span>
+  </button>
+  <button onclick="downloadPNG()" aria-label="PNG 내보내기">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+    <span>PNG</span>
+  </button>
+  <button onclick="window.print()" aria-label="인쇄 / PDF">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    <span>Print</span>
+  </button>
+</nav>
+
+<main id="main-content">
+
+  <header class="hero">
+    <svg class="hero-icon animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.2 4.2l4.3 4.3M15.5 15.5l4.3 4.3M1 12h6M17 12h6M4.2 19.8l4.3-4.3M15.5 8.5l4.3-4.3"/></svg>
+    <div class="hero-badge animate d1">RFC #1730 → PR #1908 · owner dEitY719</div>
+    <h1 class="animate d2">avatar-browse 발견성 IA 재설계</h1>
+    <p class="hero-desc animate d3">한 화면(browse)의 개선처럼 보이지만, 실제로는 결정적 AI 분류기 · 가역 병합 감사 · 도메인 taxonomy 16→67 확장 · 픽셀 단위 UX 반복 · 통제된 DB 마이그레이션을 직접 수행한 <b>약 2주(14일)</b>간의 풀스택 딜리버리입니다. 본인이 직접 저자인 PR만 집계했습니다.</p>
+    <div class="hero-stats animate d4" role="group" aria-label="핵심 지표">
+      <div class="hero-stat"><div class="hero-stat-num accent num" data-count="14">14</div><div class="hero-stat-label">실질 개발일</div><div class="hero-stat-sub">06-23 → 07-07</div></div>
+      <div class="hero-stat"><div class="hero-stat-num num" data-count="38">38</div><div class="hero-stat-label">본인 저자 PR</div><div class="hero-stat-sub">RFC 24 + 07-07 14</div></div>
+      <div class="hero-stat"><div class="hero-stat-num pos num" data-count="29230" data-prefix="+">+29,230</div><div class="hero-stat-label">추가 코드 라인</div><div class="hero-stat-sub">−1,924 · gen 제외</div></div>
+      <div class="hero-stat"><div class="hero-stat-num num" data-count="221">221</div><div class="hero-stat-label">본인 커밋</div><div class="hero-stat-sub">428 파일 변경</div></div>
     </div>
-  </div>
+  </header>
 
-  <main id="main-content" role="main">
-
-    <header class="hero">
-      <div class="wrap">
-        <span class="eyebrow animate">AgentToolbox · 딜리버리 리포트</span>
-        <h1 class="animate delay-1">avatar-browse 발견성(IA) 재설계<br>— 14일간의 풀스택 딜리버리</h1>
-        <p class="lede animate delay-2">본인(dEitY719)이 직접 저자인 PR만 집계한 기록입니다. 한 화면(browse)의 개선처럼 보이지만, 실제로는 결정적 AI 분류기 · 가역 병합 감사 · 도메인 taxonomy 16→67 확장 · 픽셀 단위 UX 반복 · 통제된 DB 마이그레이션을 직접 수행한 ~2주간의 작업입니다.</p>
-        <div class="meta animate delay-3">
-          <span class="chip">기간 <b>2026-06-23 → 07-07</b></span>
-          <span class="chip"><b>RFC #1730</b> → <b>PR #1908</b></span>
-          <span class="chip">owner <b>dEitY719</b> 저자 PR만</span>
-          <span class="chip">runtime 게이트 뒤 <b>회귀 없이 출시</b></span>
+  <section class="block" data-reveal aria-labelledby="pvr-title">
+    <div class="wrap">
+      <p class="section-label">인식 vs 실제</p>
+      <h2 class="section-title" id="pvr-title">"별 기능 없이 오래 걸렸다"?</h2>
+      <p class="section-desc">표면상 browse 한 화면의 정리처럼 보이지만, 커밋과 PR을 열어보면 이야기가 달라집니다.</p>
+      <div class="pvr">
+        <div class="panel myth">
+          <h3><span class="pill">겉보기</span> 단순 UI 개선</h3>
+          <p>"목록 화면 필터 조금 바꾼 것 같은데 2주나 걸렸네?" — 결과물 스크린샷만 보면 그렇게 읽힐 수 있습니다.</p>
+        </div>
+        <div class="panel real">
+          <h3><span class="pill">실제</span> 풀스택 기능 딜리버리</h3>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>결정적(temp=0) AI 분류기 + 중복정리 파이프라인</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>가역 soft / hard merge 감사(merge_audit before-state)</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>도메인 taxonomy 16 → 67 확장(전체 SLSI 직무체계)</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>07-07 하루에만 browse UX·정합성 9 PR — 위치·색상·계층·가독성 반복</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>dry-run → 승인 → apply 3단 백필 CI로 통제한 DB 마이그레이션</li>
+          </ul>
         </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <section>
-      <div class="wrap">
-        <div class="kpi-grid">
-          <div class="kpi accent reveal" data-reveal>
-            <div><span class="val mono" data-count="14">0</span><span class="unit">일</span></div>
-            <div class="label">실질 개발 기간</div>
-            <div class="sub">설계·백엔드(06-14~) + 연속 배포(~07-07)</div>
-          </div>
-          <div class="kpi reveal" data-reveal>
-            <div><span class="val mono" data-count="38">0</span><span class="unit">PR</span></div>
-            <div class="label">본인 저자 병합 PR</div>
-            <div class="sub">RFC 스택 24 + 07-07 연속 14</div>
-          </div>
-          <div class="kpi pos reveal" data-reveal>
-            <div><span class="val mono" data-count="29230" data-suffix="">0</span></div>
-            <div class="label">본인 추가 코드 라인 (+)</div>
-            <div class="sub">삭제 −1,924 · 자동생성 #1881 제외</div>
-          </div>
-          <div class="kpi reveal" data-reveal>
-            <div><span class="val mono" data-count="221">0</span><span class="unit">+</span></div>
-            <div class="label">본인 커밋 (06-22~07-07)</div>
-            <div class="sub">428 파일 변경 · owner 기준</div>
-          </div>
+  <section class="block" data-reveal aria-labelledby="chart-title">
+    <div class="wrap">
+      <p class="section-label">근거 · 커밋 활동</p>
+      <h2 class="section-title" id="chart-title">일자별 본인 커밋 (owner dEitY719)</h2>
+      <p class="section-desc">06-23부터 07-07까지 거의 매일 커밋이 이어졌습니다. 07-02 하루 43 커밋, 07-07 34 커밋 — 집중 투입 구간이 뚜렷합니다. (06-27·06-28·07-05는 커밋 없음)</p>
+      <div class="chart-wrap">
+        <div class="chart-box" role="img" aria-label="일자별 본인 커밋 수 막대 차트. 06-22 2, 06-23 10, 06-24 10, 06-25 3, 06-26 22, 06-29 9, 06-30 27, 07-01 36, 07-02 43, 07-03 5, 07-04 19, 07-06 1, 07-07 34 커밋.">
+          <canvas id="commitChart"></canvas>
+        </div>
+        <p class="chart-note">출처: <code>git log --author=deity719</code> (본인 커밋만). 진한 막대 = RFC #1730 스택 착수(06-30) 이후.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" data-reveal aria-labelledby="phase-title">
+    <div class="wrap">
+      <p class="section-label">타임라인 · owner 기준</p>
+      <h2 class="section-title" id="phase-title">두 단계로 나눈 본인 딜리버리</h2>
+      <p class="section-desc">07-05·07-06은 본인 PR 없이 동료가 병렬 진행했고, 07-07에 본인 작업이 집중 재개됐습니다.</p>
+      <div class="phases">
+        <div class="card phase p1">
+          <div class="range">2026-06-30 → 07-04 · RFC 스택</div>
+          <h3>1단계 — RFC #1730 발견성 IA 스택</h3>
+          <p class="sub">RFC → 3인 리뷰(UX·데이터·AI/거버넌스) → 6개 Plan 스택. 도메인 스키마 · 결정적 분류기 · 도메인 패세트 · taxonomy 16→67 · 중복정리 soft/hard merge · lab opt-in.</p>
+          <div class="stats"><span>24 PR</span><span class="mono">+26,381 / −1,065</span><span>367 파일</span><span>≈130 커밋</span></div>
+        </div>
+        <div class="card phase p2">
+          <div class="range">2026-07-07 · 연속 (#1852 tail → #1908)</div>
+          <h3>2단계 — 필터바/도메인확인 UX 반복 + 백필 CI</h3>
+          <p class="sub">공용 필터 바 통합 · 인라인 트리거 · UX 폴리시 · 회귀 수정 · 도메인 확인 색상/티어 · 패싯 정합성 · dry-run→apply 백필 CI · 사내 이식 런북. (14 PR 중 9건이 browse UX/정합성 계열)</p>
+          <div class="stats"><span>14 PR</span><span class="mono">+2,849 / −859</span><span>61 파일</span><span>34 커밋</span></div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section>
-      <div class="wrap">
-        <div class="sec-label">인식 vs 실제</div>
-        <h2 class="sec-title">"별 기능 없이 오래 걸렸다"?</h2>
-        <p class="sec-sub">표면상 browse 한 화면의 정리처럼 보이지만, 커밋·PR을 열어보면 이야기가 달라집니다.</p>
-        <div class="pvr">
-          <div class="pvr-card myth reveal" data-reveal>
-            <h3><span class="tag">겉보기</span> 단순 UI 개선</h3>
-            <p>"목록 화면 필터 조금 바꾼 것 같은데 2주나?" — 결과물만 보면 그렇게 읽힐 수 있습니다.</p>
-          </div>
-          <div class="pvr-card real reveal" data-reveal>
-            <h3><span class="tag">실제</span> 풀스택 기능 딜리버리</h3>
-            <ul>
-              <li>결정적(temp=0) AI 분류기 + 중복정리 파이프라인</li>
-              <li>가역 soft / hard merge 감사(merge_audit before-state)</li>
-              <li>도메인 taxonomy 16 → 67 확장 (전체 SLSI 직무체계)</li>
-              <li>도메인 패세트 + 정렬 축 + 진행성 노출 IA</li>
-              <li>07-07만 browse UX·정합성 9 PR — 위치·색상·계층·가독성 반복</li>
-              <li>dry-run → 승인 → apply 3단 백필 CI로 통제한 DB 마이그레이션</li>
-            </ul>
-          </div>
-        </div>
+  <section class="block" data-reveal aria-labelledby="ws-title">
+    <div class="wrap">
+      <p class="section-label">07-07 워크스트림 · owner dEitY719</p>
+      <h2 class="section-title" id="ws-title">07-07 연속 구간에서 본인이 한 일</h2>
+      <p class="section-desc">본인 저자 14개 PR을 성격별로 묶었습니다. 14건 중 9건이 browse 필터바·도메인확인·패싯 UX/정합성 계열 — "메뉴 위치·색상·가독성" 반복 투자의 직접 근거입니다.</p>
+      <div class="ws-grid">
+        <article class="card ws c-ux">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
+          <h4>공용 필터 바 통합</h4>
+          <p>토글·패싯을 공용 BrowseFilterBar 컴포넌트로 통합. authoring 도메인 확인을 flat 2단 칩(DomainChipRail)으로 통일 — 순삭 우위, 구조 단순화.</p>
+          <div class="prs"><span class="pr">#1880 +786</span><span class="pr">#1879 −498</span></div>
+        </article>
+        <article class="card ws c-ux">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></div>
+          <h4>필터 바 배치 반복 튜닝</h4>
+          <p>패싯을 토글 행 우측 인라인 트리거로 → 필터바+도메인확인 UX 폴리시 → 빠른 필터 토글 3개를 탭 행에서 아래 필터 행으로 이동(F-3 회귀 수정). 위치·정렬·가독성 반복.</p>
+          <div class="prs"><span class="pr">#1887</span><span class="pr">#1896</span><span class="pr">#1900</span></div>
+        </article>
+        <article class="card ws c-ux">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 4 4 0 0 0 0-8 2 2 0 0 1 0-4 4 4 0 0 0 0-8z"/></svg></div>
+          <h4>도메인 확인 UX (색상·티어)</h4>
+          <p>도메인 확인 단계 역할/업무 색상 코딩 + Domain/Specialty 티어 제목. 패싯 패널 대분류·세부 분야 티어 제목 추가.</p>
+          <div class="prs"><span class="pr">#1889</span><span class="pr">#1902</span></div>
+        </article>
+        <article class="card ws c-ux">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4"/><rect x="4" y="6" width="16" height="16" rx="2"/><path d="M9 14l2 2 4-4"/></svg></div>
+          <h4>패싯 선택 정합성 버그</h4>
+          <p>도메인 해제 시 자식 전문분야 유령 선택 제거(cascade). domain+specialty 동시 선택 시 specialty로 좁힘.</p>
+          <div class="prs"><span class="pr">#1901</span><span class="pr">#1908</span></div>
+        </article>
+        <article class="card ws c-data">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div>
+          <h4>통제된 DB 백필</h4>
+          <p>도메인 백필을 workflow_dispatch CI로. dry-run → 승인 → apply 3단 게이트로 프로덕션 백필 리스크를 통제.</p>
+          <div class="prs"><span class="pr">#1903 +524</span></div>
+        </article>
+        <article class="card ws c-data">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+          <h4>사내 이식 · 검증 스크립트</h4>
+          <p>도메인/전문분야 사내 이식 런북 + avatar-rehearsal.sh 검증 스크립트로 이식 리허설 자동화.</p>
+          <div class="prs"><span class="pr">#1890 +376</span></div>
+        </article>
+        <article class="card ws c-infra">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></svg></div>
+          <h4>지식 그래프 · 인프라</h4>
+          <p>understand-anything apps 지식·도메인 그래프 + 온보딩·API 계약 맵 산출(자동 생성). dup-detection fake 스택 기본 ON, githooks shim 정리.</p>
+          <div class="prs"><span class="pr">#1881 gen</span><span class="pr">#1882</span><span class="pr">#1906</span></div>
+        </article>
+        <article class="card ws c-fix">
+          <div class="ws-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="6" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v6a6 6 0 0 0 6 6h3M18 9a9 9 0 0 1-9 9"/></svg></div>
+          <h4>hard-merge 피드백 (07-04)</h4>
+          <p>hard-merge 거부(403/409/503) 시 피드백 배너가 뜨도록 수정 — RFC 스택 tail.</p>
+          <div class="prs"><span class="pr">#1852</span></div>
+        </article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section>
-      <div class="wrap">
-        <div class="sec-label">근거 · 커밋 활동</div>
-        <h2 class="sec-title">일자별 본인 커밋 (owner dEitY719)</h2>
-        <p class="sec-sub">06-23부터 07-07까지 거의 매일 커밋이 이어졌습니다. 07-02 하루 43 커밋, 07-07 34 커밋 — 집중 투입 구간이 뚜렷합니다. (06-27·06-28·07-05는 커밋 없음)</p>
-        <div class="chart-wrap reveal" data-reveal>
-          <div class="chart-box"><canvas id="commitChart" role="img" aria-label="일자별 본인(dEitY719) 커밋 수 막대 차트"></canvas></div>
-          <p class="chart-legend-note">출처: agent-toolbox <code style="font-family:ui-monospace,monospace">git log --author=deity719</code> 집계(본인 커밋만). 진한 막대 = RFC #1730 스택 착수(06-30) 이후.</p>
-        </div>
+  <section class="block" data-reveal aria-labelledby="flow-title">
+    <div class="wrap">
+      <p class="section-label">UX 집중 투자</p>
+      <h2 class="section-title" id="flow-title">"메뉴 위치를 조금 옮겼다"의 실체</h2>
+      <div class="flow-headline">
+        <span class="flow-big num" data-count="9">9</span>
+        <p class="section-desc" style="margin:0;">07-07 본인 PR 14건 중 <b>9건이 필터바·도메인확인·패싯 계열</b>. 배치·색상·계층·간격을 반복해서 다듬었습니다.</p>
       </div>
-    </section>
-
-    <section>
-      <div class="wrap">
-        <div class="sec-label">타임라인 · owner 기준</div>
-        <h2 class="sec-title">두 단계로 나눈 본인 딜리버리</h2>
-        <p class="sec-sub">RFC 스택(1단계)과 07-07 연속 UX 반복(2단계). 07-05·07-06은 본인 PR 없이 동료가 병렬 진행했고, 07-07에 본인 작업이 집중 재개됐습니다.</p>
-        <div class="phases">
-          <div class="phase p1 reveal" data-reveal>
-            <div class="ph-range">2026-06-30 → 07-04 · RFC 스택</div>
-            <div class="ph-title">1단계 — RFC #1730 발견성 IA 스택</div>
-            <div class="ph-sub">RFC → 3인 리뷰(UX·데이터·AI/거버넌스) → 6개 Plan 스택. 도메인 스키마 · 결정적 분류기 · 도메인 패세트 · taxonomy 16→67 · 중복정리 soft/hard merge · lab opt-in.</div>
-            <div class="ph-stats">
-              <span>24 병합 PR</span><span>+26,381 / −1,065</span><span>367 파일</span><span>≈130 커밋</span>
-            </div>
-          </div>
-          <div class="phase p2 reveal" data-reveal>
-            <div class="ph-range">2026-07-07 · 연속 (#1852 tail → #1908)</div>
-            <div class="ph-title">2단계 — 필터바/도메인확인 UX 반복 + 백필 CI</div>
-            <div class="ph-sub">공용 필터 바 통합 · 인라인 트리거 · UX 폴리시 · 회귀 수정 · 도메인 확인 색상/티어 · 패싯 정합성 · dry-run→apply 백필 CI · 사내 이식 런북. (14 PR 중 9건이 browse UX/정합성 계열)</div>
-            <div class="ph-stats">
-              <span>14 병합 PR</span><span>+2,849 / −859</span><span>61 파일</span><span>34 커밋</span>
-            </div>
-          </div>
-        </div>
+      <div class="flow-list">
+        <div class="flow-step"><span class="flow-num">1</span><span class="txt">토글·패싯을 공용 BrowseFilterBar 로 통합</span><span class="pr">#1880</span></div>
+        <div class="flow-connector"></div>
+        <div class="flow-step"><span class="flow-num">2</span><span class="txt">패싯을 토글 행 우측 인라인 트리거로 배치</span><span class="pr">#1887</span></div>
+        <div class="flow-connector"></div>
+        <div class="flow-step"><span class="flow-num">3</span><span class="txt">필터 바 + 도메인 확인 UX 폴리시</span><span class="pr">#1896</span></div>
+        <div class="flow-connector"></div>
+        <div class="flow-step"><span class="flow-num">4</span><span class="txt">빠른 필터 토글을 탭 행 → 아래 필터 행으로 이동 (F-3 회귀 수정)</span><span class="pr">#1900</span></div>
+        <div class="flow-connector"></div>
+        <div class="flow-step"><span class="flow-num">5</span><span class="txt">역할/업무 색상 코딩 + Domain/Specialty 티어 제목</span><span class="pr">#1889 · #1902</span></div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section>
-      <div class="wrap">
-        <div class="sec-label">07-07 워크스트림 · owner dEitY719</div>
-        <h2 class="sec-title">07-07 연속 구간에서 본인이 한 일</h2>
-        <p class="sec-sub">본인 저자 14개 PR을 성격별로 묶었습니다. 14건 중 9건이 browse 필터바·도메인확인·패싯 UX/정합성 계열 — "메뉴 위치·색상·가독성" 반복 투자의 직접 근거입니다.</p>
-        <div class="ws-grid">
-          <article class="ws ux reveal" data-reveal>
-            <div class="ic">🎛️</div>
-            <h4>공용 필터 바 통합</h4>
-            <p>토글·패싯을 공용 BrowseFilterBar 컴포넌트로 통합. authoring 도메인 확인을 flat 2단 칩(DomainChipRail)으로 통일(순삭 우위, 구조 단순화).</p>
-            <div class="prs"><span class="pr">#1880 +786</span><span class="pr">#1879 −498</span></div>
-          </article>
-          <article class="ws ux reveal" data-reveal>
-            <div class="ic">🔧</div>
-            <h4>필터 바 배치 반복 튜닝</h4>
-            <p>패싯을 토글 행 우측 인라인 트리거로 → 필터바+도메인확인 UX 폴리시 → 빠른 필터 토글 3개를 탭 행에서 아래 필터 행으로 이동(F-3 회귀 수정). 위치·정렬·가독성 반복.</p>
-            <div class="prs"><span class="pr">#1887</span><span class="pr">#1896</span><span class="pr">#1900</span></div>
-          </article>
-          <article class="ws ux reveal" data-reveal>
-            <div class="ic">🎨</div>
-            <h4>도메인 확인 UX (색상·티어)</h4>
-            <p>도메인 확인 단계 역할/업무 색상 코딩 + Domain/Specialty 티어 제목. 패싯 패널 대분류·세부 분야 티어 제목.</p>
-            <div class="prs"><span class="pr">#1889</span><span class="pr">#1902</span></div>
-          </article>
-          <article class="ws ux reveal" data-reveal>
-            <div class="ic">🧩</div>
-            <h4>패싯 선택 정합성 버그</h4>
-            <p>도메인 해제 시 자식 전문분야 유령 선택 제거(cascade). domain+specialty 동시 선택 시 specialty로 좁힘.</p>
-            <div class="prs"><span class="pr">#1901</span><span class="pr">#1908</span></div>
-          </article>
-          <article class="ws data reveal" data-reveal>
-            <div class="ic">🛡️</div>
-            <h4>통제된 DB 백필</h4>
-            <p>도메인 백필을 workflow_dispatch CI로. dry-run → 승인 → apply 3단 게이트로 프로덕션 백필 리스크 통제.</p>
-            <div class="prs"><span class="pr">#1903 +524</span></div>
-          </article>
-          <article class="ws data reveal" data-reveal>
-            <div class="ic">📖</div>
-            <h4>사내 이식 · 검증 스크립트</h4>
-            <p>도메인/전문분야 사내 이식 런북 + avatar-rehearsal.sh 검증 스크립트.</p>
-            <div class="prs"><span class="pr">#1890 +376</span></div>
-          </article>
-          <article class="ws feature reveal" data-reveal>
-            <div class="ic">🗺️</div>
-            <h4>지식 그래프 · 인프라</h4>
-            <p>understand-anything apps 지식·도메인 그래프 + 온보딩·API 계약 맵 산출(자동생성). dup-detection fake 스택 기본 ON.</p>
-            <div class="prs"><span class="pr">#1881 gen</span><span class="pr">#1882</span><span class="pr">#1906</span></div>
-          </article>
-          <article class="ws feature reveal" data-reveal>
-            <div class="ic">🩹</div>
-            <h4>hard-merge 피드백 (07-04)</h4>
-            <p>hard-merge 거부(403/409/503) 시 피드백 배너가 뜨도록 수정 — RFC 스택 tail.</p>
-            <div class="prs"><span class="pr">#1852</span></div>
-          </article>
-        </div>
-        <div class="card reveal" data-reveal style="margin-top:22px; border-left:3px solid var(--warning);">
-          <h4 style="font-size:1rem; margin-bottom:8px;">🤝 팀 병렬 작업 (본인 저자 아님 · 참고용)</h4>
-          <p style="font-size:13.5px; color:var(--text-secondary);">같은 기능 위에서 동료가 07-05~07-07 병렬 진행: 서브에이전트 번들 export(<b>#1884/#1886</b>, msaltnet), 대시보드 카드 API(<b>#1858</b>, msaltnet), 공개 OpenAPI CLI(<b>#1855</b>, jemings), authoring 병합 신뢰성(<b>#1860</b>, JunNyung-Hur), 상태/미사용 필터(<b>#1876/#1877</b>, msaltnet). 팀 기여이므로 본 owner 기록에는 카운트하지 않습니다.</p>
-        </div>
+  <section class="block" data-reveal aria-labelledby="team-title">
+    <div class="wrap">
+      <div class="team">
+        <h4 id="team-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>팀 병렬 작업 (본인 저자 아님 · 참고용)</h4>
+        <p>같은 기능 위에서 동료가 07-05~07-07 병렬 진행: 서브에이전트 번들 export(<code>#1884/#1886</code>, msaltnet), 대시보드 카드 API(<code>#1858</code>, msaltnet), 공개 OpenAPI CLI(<code>#1855</code>, jemings), authoring 병합 신뢰성(<code>#1860</code>, JunNyung-Hur), 상태/미사용 필터(<code>#1876/#1877</code>, msaltnet). 팀 기여이므로 본 owner 기록에는 카운트하지 않습니다.</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section>
-      <div class="wrap">
-        <div class="banner reveal" data-reveal>
-          <div class="big mono" data-count="9" data-suffix="">0</div>
-          <div>
-            <h3>07-07 하루, browse UX·정합성에만 9 PR</h3>
-            <p>"메뉴 위치를 조금 옮겼다"의 실체 — 본인 07-07 PR 14건 중 9건이 필터바·도메인확인·패싯 계열. 배치·색상·계층·간격을 반복해서 다듬었습니다.</p>
-            <div class="flow">
-              <span class="step">BrowseFilterBar 통합 #1880</span><span class="arr">→</span>
-              <span class="step">인라인 트리거 #1887</span><span class="arr">→</span>
-              <span class="step">UX 폴리시 #1896</span><span class="arr">→</span>
-              <span class="step">탭행→필터행 회귀 수정 #1900</span><span class="arr">→</span>
-              <span class="step">색상/티어 #1889·#1902</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+  <footer>
+    <div class="wrap">
+      <p><b>출처 · 검증:</b> 모든 수치는 <code>gh pr list --author dEitY719</code> 및 <code>git log --author=deity719</code> 로 본인 저자 PR/커밋만 집계. 코드 델타는 자동 생성 understand-graph(<code>#1881</code>, 79k 라인)를 제외한 실코드 값입니다.</p>
+      <p>초안이 날짜 필터로 동료 PR(export·대시보드·OpenAPI·authoring)까지 포함했던 것을 owner 기준으로 정정했습니다 (38 PR · <span class="mono">+29,230 / −1,924</span> · 428 파일). 원본: <code>docs/task-history/2026-07-04-task-list.md</code> · playbook PR #29</p>
+    </div>
+  </footer>
 
-    <footer>
-      <div class="wrap">
-        <p class="src">
-          <strong>출처 · 검증:</strong> 모든 수치는 <code>agent-toolbox</code> 저장소의 <code>gh pr list --author dEitY719</code> 및 <code>git log --author=deity719</code> 로 <em>본인 저자 PR/커밋만</em> 집계.
-          코드 델타는 자동 생성 understand-graph(#1881, 79k 라인)를 제외한 실코드 값입니다.
-          초안이 날짜 필터로 동료 PR(export·대시보드·OpenAPI·authoring)까지 포함했던 것을 owner 기준으로 정정했습니다(38 PR · +29,230 / −1,924).
-        </p>
-        <p class="src" style="margin-top:10px;">원본: <code>docs/task-history/2026-07-04-task-list.md</code> · playbook PR #29</p>
-      </div>
-    </footer>
+</main>
 
-  </main>
+<script>
+var html = document.documentElement;
+var saved = localStorage.getItem('viz-theme');
+var current = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+function applyTheme(t) {
+  html.className = 'theme-' + t;
+  var lbl = document.getElementById('themeLabel');
+  if (lbl) lbl.textContent = (t === 'dark') ? 'Light' : 'Dark';
+  current = t; localStorage.setItem('viz-theme', t);
+  if (window._commitChart) buildChart();
+}
+function cycleTheme() { applyTheme(current === 'dark' ? 'light' : 'dark'); }
+applyTheme(current);
 
-  <script>
-    function toggleMenu() { var d = document.getElementById('vizMenuDropdown'); if (d) d.classList.toggle('open'); }
-    document.addEventListener('click', function(e){ if (!e.target.closest('.viz-menu')) { var d = document.getElementById('vizMenuDropdown'); if (d) d.classList.remove('open'); } });
-    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { var d = document.getElementById('vizMenuDropdown'); if (d) d.classList.remove('open'); } });
+function downloadPNG() {
+  var node = document.getElementById('main-content');
+  if (!window.htmlToImage) return;
+  var bg = getComputedStyle(document.body).backgroundColor;
+  htmlToImage.toPng(node, { backgroundColor: bg, pixelRatio: 2 })
+    .then(function(url){ var a = document.createElement('a'); a.download = 'avatar-browse-14day-report.png'; a.href = url; a.click(); })
+    .catch(function(e){ console.error('PNG export failed:', e); });
+}
 
-    var savedTheme = localStorage.getItem('viz-theme');
-    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    function applyTheme(t) {
-      document.documentElement.className = 'theme-' + t;
-      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
-      document.getElementById('themeLabel').textContent = t === 'dark' ? 'Dark' : 'Light';
-      localStorage.setItem('viz-theme', t); currentTheme = t;
-      if (typeof onThemeChange === 'function') onThemeChange();
+/* Number counters */
+function runCounters() {
+  document.querySelectorAll('[data-count]').forEach(function(el) {
+    if (el.dataset.done) return; el.dataset.done = '1';
+    var target = parseFloat(el.dataset.count), prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
+    var start = null, dur = 1200;
+    function tick(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1), eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = prefix + Math.round(target * eased).toLocaleString() + suffix;
+      if (p < 1) requestAnimationFrame(tick);
     }
-    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
-    applyTheme(currentTheme);
+    requestAnimationFrame(tick);
+  });
+}
 
-    var revealObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(function(el){ revealObserver.observe(el); });
+/* Scroll reveal — content defaults visible; 500ms fallback forces all revealed */
+var revealObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('revealed'); revealObs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('[data-reveal]').forEach(function(el){ revealObs.observe(el); });
+setTimeout(function(){ document.querySelectorAll('[data-reveal]').forEach(function(el){ el.classList.add('revealed'); }); }, 500);
 
-    function animateCounters() {
-      document.querySelectorAll('[data-count]').forEach(function(el) {
-        if (el.dataset.counted) return; el.dataset.counted = '1';
-        var target = parseFloat(el.dataset.count), prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
-        var start = performance.now(), duration = 1300;
-        (function tick(now) {
-          var p = Math.min((now - start) / duration, 1), eased = 1 - Math.pow(1 - p, 3);
-          el.textContent = prefix + Math.round(target * eased).toLocaleString() + suffix;
-          if (p < 1) requestAnimationFrame(tick);
-        })(start);
-      });
+/* Commit chart */
+var commitData = {
+  labels: ['06-22','06-23','06-24','06-25','06-26','06-29','06-30','07-01','07-02','07-03','07-04','07-06','07-07'],
+  values: [2,10,10,3,22,9,27,36,43,5,19,1,34],
+  rfcStart: 6
+};
+function buildChart() {
+  if (typeof Chart === 'undefined') return;
+  var canvas = document.getElementById('commitChart'); if (!canvas) return;
+  var isDark = html.classList.contains('theme-dark');
+  var textC = isDark ? '#b5b5b5' : '#555';
+  var gridC = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  var strong = isDark ? '#8b5cf6' : '#7c3aed';
+  var soft = isDark ? 'rgba(139,92,246,0.32)' : 'rgba(124,58,237,0.28)';
+  if (window._commitChart) { window._commitChart.destroy(); }
+  var colors = commitData.values.map(function(_, i){ return i >= commitData.rfcStart ? strong : soft; });
+  window._commitChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: { labels: commitData.labels, datasets: [{ data: commitData.values, backgroundColor: colors, borderRadius: 6, borderSkipped: false, maxBarThickness: 42 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      layout: { padding: { top: 8 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: isDark ? '#1C1C1C' : '#1a1a1a', padding: 11, cornerRadius: 8, titleFont: { family: 'Inter', weight: '700' }, bodyFont: { family: 'Inter' },
+          callbacks: { label: function(c){ return c.parsed.y + ' 커밋' + (c.dataIndex >= commitData.rfcStart ? ' · RFC 스택 이후' : ''); } } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: textC, font: { family: 'Inter', size: 11 } } },
+        y: { beginAtZero: true, grid: { color: gridC }, ticks: { color: textC, font: { family: 'Inter', size: 11 }, precision: 0 } }
+      }
     }
-    var counterEl = document.querySelector('[data-count]');
-    if (counterEl) {
-      var cObs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(e) { if (e.isIntersecting) { animateCounters(); cObs.disconnect(); } });
-      }, { threshold: 0.3 });
-      cObs.observe(counterEl);
-    }
+  });
+}
 
-    // === Commit activity chart ===
-    var commitData = {
-      labels: ['06-22','06-23','06-24','06-25','06-26','06-29','06-30','07-01','07-02','07-03','07-04','07-06','07-07'],
-      values: [2,10,10,3,22,9,27,36,43,5,19,1,34],
-      // index >= 6 (06-30 onward) = RFC #1730 스택 착수 이후
-      rfcStart: 6
-    };
-    var commitChart = null;
-    function buildCharts() {
-      if (typeof Chart === 'undefined') return;
-      var isDark = document.documentElement.classList.contains('theme-dark');
-      var text = isDark ? '#c9c9c9' : '#475569';
-      var grid = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-      var accent = isDark ? '#3b82f6' : '#2563eb';
-      var accentSoft = isDark ? 'rgba(59,130,246,0.38)' : 'rgba(37,99,235,0.32)';
-      var canvas = document.getElementById('commitChart');
-      if (!canvas) return;
-      if (commitChart) { commitChart.destroy(); commitChart = null; }
-      var colors = commitData.values.map(function(_, i){ return i >= commitData.rfcStart ? accent : accentSoft; });
-      commitChart = new Chart(canvas.getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: commitData.labels,
-          datasets: [{
-            label: '커밋 수', data: commitData.values,
-            backgroundColor: colors, borderRadius: 7, borderSkipped: false, maxBarThickness: 46
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, animation: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: isDark ? '#1C1C1C' : '#0f172a', padding: 12, cornerRadius: 8,
-              titleFont: { family: 'Inter', weight: '700' }, bodyFont: { family: 'Inter' },
-              callbacks: { label: function(c){ return c.parsed.y + ' 커밋' + (c.dataIndex >= commitData.rfcStart ? ' · RFC 스택 이후' : ''); } }
-            }
-          },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: text, font: { family: 'Inter', size: 11 } } },
-            y: { beginAtZero: true, grid: { color: grid }, ticks: { color: text, font: { family: 'Inter', size: 11 }, precision: 0 } }
-          }
-        }
-      });
-    }
-    function onThemeChange() { buildCharts(); }
-    if (document.getElementById('commitChart')) {
-      var chartObs = new IntersectionObserver(function(entries){
-        entries.forEach(function(e){ if (e.isIntersecting) { buildCharts(); chartObs.disconnect(); } });
-      }, { threshold: 0.2 });
-      chartObs.observe(document.getElementById('commitChart'));
-    }
-    window.addEventListener('load', function(){ if (!commitChart) buildCharts(); });
-
-    async function downloadImage() {
-      var menu = document.querySelector('.viz-menu'); menu.style.display = 'none';
-      try {
-        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2, filter: function(n){ return !n.classList || !n.classList.contains('viz-menu'); } });
-        var a = document.createElement('a'); a.href = url; a.download = 'avatar-browse-14day-report.png'; a.click();
-      } catch(e) { console.error('Download failed:', e); }
-      menu.style.display = '';
-    }
-  </script>
+window.addEventListener('load', function(){
+  setTimeout(function(){ buildChart(); runCounters(); window.dispatchEvent(new Event('resize')); }, 180);
+});
+</script>
 </body>
 </html>

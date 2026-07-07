@@ -15,7 +15,6 @@ module.exports = function (eleventyConfig) {
     "docs/confluence-guides/**",
     "docs/worklog-templates/**",
     "docs/superpowers/**",
-    "docs/task-history/**",
     // skills/*/SKILL_ko.md 는 README.md 와 쌍이므로 홈 카드 중복 방지를 위해 제외
     "docs/skills/**/SKILL_ko.md",
   ];

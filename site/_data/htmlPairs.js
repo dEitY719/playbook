@@ -5,6 +5,22 @@ const VARIANT_ORDER = ["HTML", "C", "CX", "G"];
 const VARIANT_SUFFIX_RE = /^(.+?)-(C|CX|G)$/;
 
 /**
+ * 11ty 는 `YYYY-MM-DD-` 날짜 접두어가 붙은 파일의 `filePathStem` 에서
+ * 날짜를 떼어낸다 (예: `2026-07-04-task-list` → `task-list`). 반면 실제
+ * 출력 URL 과 이 HTML 파일명은 날짜를 유지한다. 카드/포스트 템플릿은
+ * `htmlPairs[page.filePathStem]` 로 조회하므로, 매칭이 되려면 baseKey 도
+ * 마지막 경로 세그먼트의 날짜 접두어를 동일하게 제거해야 한다. (URL 은 날짜 유지)
+ */
+function stripDatePrefix(stem) {
+  const parts = stem.split("/");
+  parts[parts.length - 1] = parts[parts.length - 1].replace(
+    /^\d{4}-\d{2}-\d{2}-/,
+    ""
+  );
+  return parts.join("/");
+}
+
+/**
  * 한 md 파일에 대응되는 HTML variant 목록 생성.
  *
  * 규칙:
@@ -30,11 +46,11 @@ module.exports = function () {
     let url;
 
     if (variantMatch) {
-      baseKey = "/" + variantMatch[1];
+      baseKey = "/" + stripDatePrefix(variantMatch[1]);
       label = variantMatch[2];
       url = "/" + stem + "/interactive/";
     } else {
-      baseKey = "/" + stem;
+      baseKey = "/" + stripDatePrefix(stem);
       label = "HTML";
       const pretty = toPrettyStem(stem);
       url = pretty ? "/" + pretty + "/interactive/" : "/interactive/";

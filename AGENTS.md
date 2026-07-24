@@ -286,3 +286,8 @@ Before committing new RCA documents:
 **Generated**: 2025-02-02
 **Last Updated**: 2026-03-14
 **Version**: 1.2
+
+## Changelog
+
+- On completing a user-visible, operational, schema, deployment, or non-obvious behavior change, update `docs/public/changelog.md` (or note why an entry is unnecessary). Format: `- 변경: **summary**` under a `## YYYY-MM-DD` header.
+- This changelog is collected by the daily/weekly report hub (my-share) to generate reports.
